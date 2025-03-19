@@ -1,0 +1,44 @@
+# macOS 시스템 파일
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# VSCode 설정 파일
+.vscode/
+*.code-workspace
+
+# Node.js 관련
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 빌드 결과물
+dist/
+build/
+out/
+.next/
+.vite/
+.vercel/
+.netlify/
+
+# 환경 변수 파일 (보안 정보)
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# ESLint / Prettier / Jest / Cypress 관련
+.eslintcache
+.prettiercache
+coverage/
+cypress/screenshots/
+cypress/videos/
+
+# 로그 파일
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*

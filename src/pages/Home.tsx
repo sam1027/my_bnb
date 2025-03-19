@@ -1,7 +1,6 @@
 import React from 'react';
 import { FaHeart } from 'react-icons/fa';
 import * as H from '../styles/HomeStyles';
-import sampleImg1 from '../assets/images/sample_img_1.jpg';
 
 // 숙소 데이터 타입 정의
 interface Stay {
@@ -16,7 +15,7 @@ interface Stay {
 const stayList: Stay[] = [
   {
     id: 1,
-    image: 'https://source.unsplash.com/400x300/?house,nature',
+    image: '',
     location: '한국 홍천',
     distance: '60km 거리',
     price: '₩136,941 / 박',
@@ -24,7 +23,7 @@ const stayList: Stay[] = [
   },
   {
     id: 2,
-    image: 'https://source.unsplash.com/400x300/?villa,pool',
+    image: '',
     location: '한국 원주시',
     distance: '78km 거리',
     price: '₩171,177 / 박',
@@ -32,7 +31,7 @@ const stayList: Stay[] = [
   },
   {
     id: 3,
-    image: 'https://source.unsplash.com/400x300/?cabin,forest',
+    image: '',
     location: '한국 양평',
     distance: '66km 거리',
     price: '₩230,256 / 박',
@@ -50,8 +49,12 @@ const Home: React.FC = () => {
         {stayList.map((stay) => (
           <H.Card key={stay.id}>
             <H.ImageWrapper>
-              <img src={sampleImg1} alt={stay.location} />
-              <H.FavoriteButton>
+              {stay.image ? (
+                <H.Image src={stay.image} alt={`${stay.location} 숙소`} />
+              ) : (
+                <H.Placeholder>이미지를 업로드하세요</H.Placeholder>
+              )}
+              <H.FavoriteButton aria-label="찜하기">
                 <FaHeart />
               </H.FavoriteButton>
             </H.ImageWrapper>

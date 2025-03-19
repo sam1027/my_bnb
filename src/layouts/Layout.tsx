@@ -1,24 +1,25 @@
-import { Link, Outlet } from 'react-router-dom';
+import React from 'react';
+import * as L from '../styles/LayoutStyles';
 
-const Layout = () => {
+interface LayoutProps {
+  children: React.ReactNode;
+}
+
+const Layout = ({ children }: LayoutProps) => {
   return (
-    <div>
-      <header>
-        <nav>
-          <ul>
-            <li>
-              <Link to="/">홈</Link>
-            </li>
-            <li>
-              <Link to="/about">소개</Link>
-            </li>
-          </ul>
-        </nav>
-      </header>
-      <main>
-        <Outlet /> {/* 페이지 컴포넌트가 여기에 렌더링됨 */}
-      </main>
-    </div>
+    <L.Container>
+      <L.Header>
+        <L.Nav>
+          <L.Logo>MyApp</L.Logo>
+          <L.NavLinks>
+            <L.StyledLink to="/">홈</L.StyledLink>
+            <L.Button onClick={() => {}}>로그아웃</L.Button>
+            <L.Button onClick={() => {}}>로그인</L.Button>
+          </L.NavLinks>
+        </L.Nav>
+      </L.Header>
+      <L.Main>{children}</L.Main>
+    </L.Container>
   );
 };
 

@@ -1,11 +1,11 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import Layout from '../../layouts/Layout';
+import BasicLayout from '../../layouts/BasicLayout';
 
 const PrivateRoute = () => {
   return true ? (
-    <Layout>
+    <BasicLayout>
       <Outlet />
-    </Layout>
+    </BasicLayout>
   ) : null;
 };
 

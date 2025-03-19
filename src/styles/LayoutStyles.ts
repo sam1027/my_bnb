@@ -21,9 +21,15 @@ export const Nav = styled.nav`
   margin: 0 auto;
 `;
 
-export const Logo = styled.h1`
+export const Logo = styled(Link)`
   font-size: 24px;
   font-weight: bold;
+  text-decoration: none;
+  color: #333;
+
+  &:hover {
+    color: #007bff;
+  }
 `;
 
 export const NavLinks = styled.div`

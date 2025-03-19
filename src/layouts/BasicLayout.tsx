@@ -1,18 +1,27 @@
 import React from 'react';
 import * as L from '../styles/LayoutStyles';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
-const Layout = ({ children }: LayoutProps) => {
+const BasicLayout = ({ children }: LayoutProps) => {
+  const navigate = useNavigate();
+
   return (
     <L.Container>
       <L.Header>
         <L.Nav>
-          <L.Logo>MyApp</L.Logo>
+          <L.Logo to="/">My BNB</L.Logo>
           <L.NavLinks>
-            <L.StyledLink to="/">홈</L.StyledLink>
+            <L.Button
+              onClick={() => {
+                navigate('/write');
+              }}
+            >
+              New Room
+            </L.Button>
             <L.Button onClick={() => {}}>로그아웃</L.Button>
             <L.Button onClick={() => {}}>로그인</L.Button>
           </L.NavLinks>
@@ -23,4 +32,4 @@ const Layout = ({ children }: LayoutProps) => {
   );
 };
 
-export default Layout;
+export default BasicLayout;

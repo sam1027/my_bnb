@@ -4,22 +4,13 @@ import { set, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import KakaoMapWithSearch from '../components/KakaoMapWithSearch';
 import { useEffect, useState } from 'react';
+import { IRoom } from '../types/room';
+import { createRoom } from '../api/roomApi';
 
 declare global {
   interface Window {
     kakao: any;
   }
-}
-
-interface IFormInput {
-  title: string;
-  content: string;
-  address?: string;
-  detailAddress?: string;
-  price?: number | null;
-  lat?: number;
-  lon?: number;
-  images?: FileList;
 }
 
 const schema = yup.object().shape({
@@ -36,7 +27,7 @@ const schema = yup.object().shape({
 });
 
 const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
-const MAX_IMAGE_COUNT = 5;
+const MAX_IMAGE_COUNT = 10;
 
 const WriteContainer = () => {
   const {
@@ -46,7 +37,7 @@ const WriteContainer = () => {
     setValue,
     watch,
     formState: { errors },
-  } = useForm<IFormInput>({
+  } = useForm<IRoom>({
     resolver: yupResolver(schema),
   });
 
@@ -114,8 +105,24 @@ const WriteContainer = () => {
     setValue('images', dataTransfer.files);
   };
 
-  const handleSaveData = async (data: IFormInput) => {
+  const handleSaveData = async (data: IRoom) => {
     console.log(data);
+
+    const formData = new FormData();
+    formData.append('title', data.title);
+    formData.append('content', data.content);
+    formData.append('address', data.address || '');
+    formData.append('detailAddress', data.detailAddress || '');
+    formData.append('price', String(data.price || ''));
+    formData.append('lat', String(data.lat || ''));
+    formData.append('lon', String(data.lon || ''));
+    if (data.images) {
+      Array.from(data.images).forEach((image) => {
+        formData.append('images', image);
+      });
+    }
+
+    createRoom(formData);
   };
 
   return (
@@ -156,7 +163,7 @@ const WriteContainer = () => {
         <W.Input type="text" {...register('lon')} readOnly placeholder="자동 입력" />
 
         {/* 사진 업로드 */}
-        <W.Label>사진 업로드 (최대 5장, 각 3MB 이하)</W.Label>
+        <W.Label>사진 업로드 (최대 10장, 각 3MB 이하)</W.Label>
         <input type="file" accept="image/*" multiple onChange={handleImageChange} />
 
         {/* 이미지 미리보기 */}

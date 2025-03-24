@@ -1,7 +1,10 @@
-// KakaoMapWithSearch.tsx
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
-const KakaoMapWithSearch = () => {
+interface IProps {
+  handleMapInfo: (address: string, lat: number, lon: number) => void;
+}
+
+const KakaoMapWithSearch = (props: IProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const [map, setMap] = useState<any>(null);
@@ -54,8 +57,11 @@ const KakaoMapWithSearch = () => {
         if (marker) marker.setMap(null);
         const newMarker = new window.kakao.maps.Marker({ map, position: coords });
         setMarker(newMarker);
+
+        // 부모 컴포넌트로 주소와 좌표 전달
+        props.handleMapInfo(address, coords.getLat(), coords.getLng());
       } else {
-        alert('주소 검색 실패');
+        alert('정확한 주소를 입력해주세요.');
       }
     });
   };
@@ -68,6 +74,12 @@ const KakaoMapWithSearch = () => {
         onChange={(e) => setAddress(e.target.value)}
         placeholder="주소를 입력하세요"
         style={{ width: '300px', marginRight: '8px' }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSearch();
+          }
+        }}
       />
       <button type="button" onClick={handleSearch}>
         검색

@@ -1,9 +1,9 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as W from '../styles/WriteStyles';
-import { useForm } from 'react-hook-form';
+import { set, useForm } from 'react-hook-form';
 import * as yup from 'yup';
-import { useKakaoLoader } from '../hooks/useKakaoLoader';
 import KakaoMapWithSearch from '../components/KakaoMapWithSearch';
+import { useEffect, useState } from 'react';
 
 declare global {
   interface Window {
@@ -35,73 +35,93 @@ const schema = yup.object().shape({
     .nullable(),
 });
 
+const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
+const MAX_IMAGE_COUNT = 5;
+
 const WriteContainer = () => {
   const {
     register,
     handleSubmit,
     getValues,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<IFormInput>({
     resolver: yupResolver(schema),
   });
 
-  const isKakaoReady = useKakaoLoader();
+  const [previewImages, setPreviewImages] = useState<string[]>([]);
 
-  const handleSearch = (e?: React.MouseEvent<HTMLButtonElement>) => {
-    e?.preventDefault();
+  const images = watch('images');
 
-    console.log('handleSearch 호출됨');
-
-    if (!isKakaoReady || !window.kakao?.maps?.services) {
-      alert('카카오맵 로딩이 아직 안 됐어요!');
+  useEffect(() => {
+    if (!images || images.length === 0) {
+      setPreviewImages([]);
       return;
     }
 
-    const address = getValues('address');
-    if (!address || address.trim() === '') {
-      alert('주소를 입력해주세요!');
+    const fileArray = Array.from(images);
+    const urls = fileArray.map((file) => URL.createObjectURL(file));
+    setPreviewImages(urls);
+
+    // 메모리 누수 방지
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [images]);
+
+  const handleMapInfo = (address: string, lat: number, lon: number) => {
+    setValue('address', address);
+    setValue('lat', lat);
+    setValue('lon', lon);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const fileArray = Array.from(files);
+
+    if (fileArray.length > MAX_IMAGE_COUNT) {
+      alert(`이미지는 최대 ${MAX_IMAGE_COUNT}장까지 업로드 가능합니다.`);
+      e.target.value = '';
       return;
     }
 
-    console.log('주소:', address);
-    console.log('카카오:', window.kakao);
-
-    const geocoder = new window.kakao.maps.services.Geocoder();
-
-    geocoder.addressSearch(address, async (result: any, status: string) => {
-      if (status === window.kakao.maps.services.Status.OK) {
-        const lat = result[0].y;
-        const lng = result[0].x;
-
-        setValue('lat', lat);
-        setValue('lon', lng);
-
-        console.log('주소:', address);
-        console.log('위도:', lat);
-        console.log('경도:', lng);
-
-        // try {
-        //   await axios.post('http://localhost:3001/api/location', {
-        //     address,
-        //     latitude: lat,
-        //     longitude: lng,
-        //   });
-        //   alert('저장 완료');
-        // } catch (error) {
-        //   console.error(error);
-        //   alert('저장 실패');
-        // }
-      } else {
-        alert('주소 검색 실패');
+    let exceedFiles: string[] = [];
+    const validFiles = fileArray.filter((file) => {
+      if (file.size > MAX_IMAGE_SIZE) {
+        exceedFiles.push(file.name);
+        return false;
       }
+      return true;
     });
+
+    if (exceedFiles.length > 0)
+      alert(`${exceedFiles.join(', ')} 파일은 3MB를 초과하여 제외됩니다.`);
+
+    if (fileArray.length !== validFiles.length) {
+      e.target.value = '';
+    }
+
+    if (validFiles.length === 0) {
+      return;
+    }
+
+    const dataTransfer = new DataTransfer();
+    validFiles.forEach((file) => dataTransfer.items.add(file));
+
+    setValue('images', dataTransfer.files);
+  };
+
+  const handleSaveData = async (data: IFormInput) => {
+    console.log(data);
   };
 
   return (
     <W.Container>
       <h2>숙박업소 등록</h2>
-      <W.Form onSubmit={handleSubmit((data) => console.log(data))}>
+      <W.Form onSubmit={handleSubmit((data) => handleSaveData(data))}>
         {/* 제목 */}
         <W.Label>제목 (필수)</W.Label>
         <W.Input type="text" {...register('title')} placeholder="제목을 입력하세요" />
@@ -112,18 +132,12 @@ const WriteContainer = () => {
         <W.Textarea {...register('content')} placeholder="숙소 설명을 입력하세요" />
         {errors.content && <W.Error>{errors.content.message}</W.Error>}
 
-        {/* 주소 (Google 자동완성) */}
-        <W.Label>주소</W.Label>
-        <W.Input type="text" {...register('address')} placeholder="주소를 입력하세요" />
-        <button type="button" onClick={handleSearch}>
-          검색
-        </button>
+        {/* 주소 */}
+        <KakaoMapWithSearch handleMapInfo={handleMapInfo} />
 
         {/* 상세 주소 */}
         <W.Label>상세 주소</W.Label>
         <W.Input type="text" {...register('detailAddress')} placeholder="상세 주소를 입력하세요" />
-
-        <KakaoMapWithSearch />
 
         {/* 가격 */}
         <W.Label>1박 가격</W.Label>
@@ -142,14 +156,14 @@ const WriteContainer = () => {
         <W.Input type="text" {...register('lon')} readOnly placeholder="자동 입력" />
 
         {/* 사진 업로드 */}
-        <W.Label>사진 업로드</W.Label>
-        <input type="fil e" accept="image/*" multiple />
+        <W.Label>사진 업로드 (최대 5장, 각 3MB 이하)</W.Label>
+        <input type="file" accept="image/*" multiple onChange={handleImageChange} />
 
         {/* 이미지 미리보기 */}
         <W.ImagePreviewContainer>
-          {/* {previewImages.map((image, index) => (
-              <W.ImagePreview key={index} src={image} alt={`숙소 이미지 ${index + 1}`} />
-            ))} */}
+          {previewImages.map((src, index) => (
+            <W.ImagePreview key={index} src={src} alt={`숙소 이미지 ${index + 1}`} />
+          ))}
         </W.ImagePreviewContainer>
 
         <W.SubmitButton type="submit">숙박업소 등록</W.SubmitButton>

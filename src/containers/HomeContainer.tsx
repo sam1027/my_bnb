@@ -3,13 +3,14 @@ import * as H from '../styles/HomeStyles';
 import { useQuery } from '@tanstack/react-query';
 import { IRoom } from '../types/room';
 import Spinner from '../components/Spinner';
+import Error500 from '../components/error/Error500';
 
 const HomeContainer = () => {
-  const { data, isLoading, isFetching, error } = useQuery<IRoom[]>({
+  const { data, isLoading, isFetching, refetch, error } = useQuery<IRoom[]>({
     queryKey: ['fetchRooms'],
   });
 
-  if (error) return <div>Error...</div>;
+  if (error) return <Error500 onRetry={refetch} />;
 
   console.log(`list: ${JSON.stringify(data)}`);
 

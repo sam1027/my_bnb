@@ -8,7 +8,7 @@ export const Container = styled.div`
 `;
 
 export const Header = styled.header`
-  background: #f8f9fa;
+  background: ${({ theme }) => theme.bgColor};
   padding: 16px;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 `;

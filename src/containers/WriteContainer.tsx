@@ -5,7 +5,8 @@ import * as yup from 'yup';
 import KakaoMapWithSearch from '../components/KakaoMapWithSearch';
 import { useEffect, useState } from 'react';
 import { IRoom } from '../types/room';
-import { createRoom } from '../api/roomApi';
+import { insertRoom } from '../api/roomApi';
+import { useNavigate } from 'react-router-dom';
 
 declare global {
   interface Window {
@@ -30,6 +31,8 @@ const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
 const MAX_IMAGE_COUNT = 10;
 
 const WriteContainer = () => {
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
@@ -122,7 +125,11 @@ const WriteContainer = () => {
       });
     }
 
-    createRoom(formData);
+    const roomId = await insertRoom(formData);
+    if (roomId) {
+      alert('등록되었습니다.');
+      navigate(`/`);
+    }
   };
 
   return (

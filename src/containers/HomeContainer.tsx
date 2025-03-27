@@ -36,7 +36,10 @@ const HomeContainer = () => {
             <H.Card key={room.id}>
               <H.ImageWrapper>
                 {room.images ? (
-                  <H.Image src="" alt={`숙소`} />
+                  <H.Image
+                    src={`http://localhost:4000/uploads/${room.images[0].file_name}`}
+                    alt={`숙소`}
+                  />
                 ) : (
                   <H.Placeholder>이미지를 업로드하세요</H.Placeholder>
                 )}

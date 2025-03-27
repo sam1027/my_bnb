@@ -4,7 +4,7 @@ import { set, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import KakaoMapWithSearch from '../components/KakaoMapWithSearch';
 import { useEffect, useState } from 'react';
-import { IRoom } from '../types/room';
+import { IRoom, IRoomForm } from '../types/room';
 import { insertRoom } from '../api/roomApi';
 import { useNavigate } from 'react-router-dom';
 
@@ -40,7 +40,7 @@ const WriteContainer = () => {
     setValue,
     watch,
     formState: { errors },
-  } = useForm<IRoom>({
+  } = useForm<IRoomForm>({
     resolver: yupResolver(schema),
   });
 
@@ -108,14 +108,14 @@ const WriteContainer = () => {
     setValue('images', dataTransfer.files);
   };
 
-  const handleSaveData = async (data: IRoom) => {
+  const handleSaveData = async (data: IRoomForm) => {
     console.log(data);
 
     const formData = new FormData();
     formData.append('title', data.title);
     formData.append('content', data.content);
     formData.append('address', data.address || '');
-    formData.append('detailAddress', data.detailAddress || '');
+    formData.append('address_dtl', data.address_dtl || '');
     formData.append('price', String(data.price || ''));
     formData.append('lat', String(data.lat || ''));
     formData.append('lon', String(data.lon || ''));
@@ -151,7 +151,7 @@ const WriteContainer = () => {
 
         {/* 상세 주소 */}
         <W.Label>상세 주소</W.Label>
-        <W.Input type="text" {...register('detailAddress')} placeholder="상세 주소를 입력하세요" />
+        <W.Input type="text" {...register('address_dtl')} placeholder="상세 주소를 입력하세요" />
 
         {/* 가격 */}
         <W.Label>1박 가격</W.Label>

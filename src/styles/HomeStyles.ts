@@ -66,24 +66,34 @@ export const Placeholder = styled.div`
   font-size: 14px;
 `;
 
-export const FavoriteButton = styled.button`
+interface FavoriteButtonProps {
+  $liked: boolean;
+}
+
+export const FavoriteButton = styled.button<FavoriteButtonProps>`
   position: absolute;
   top: 10px;
   right: 10px;
-  background: rgba(255, 255, 255, 0.8);
+
+  /* ✅ 버튼 자체 안 보이게 만들기 */
+  background: transparent;
   border: none;
-  border-radius: 50%;
-  padding: 8px;
+  padding: 0;
+  margin: 0;
+  outline: none;
   cursor: pointer;
-  transition: background 0.3s ease;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   svg {
-    color: red;
+    color: ${({ $liked }) => ($liked ? 'red' : 'grey')};
     font-size: 18px;
-  }
-
-  &:hover {
-    background: rgba(255, 255, 255, 1);
+    transition: color 0.2s ease;
+    &:hover {
+      color: red;
+    }
   }
 `;
 

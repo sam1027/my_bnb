@@ -8,4 +8,5 @@ export interface IRoom {
   lat?: number;
   lon?: number;
   images?: FileList;
+  liked?: boolean;
 }

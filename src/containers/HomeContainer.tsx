@@ -5,6 +5,7 @@ import { IRoom } from '../types/room';
 import Spinner from '../components/Spinner';
 import Error500 from '../components/error/Error500';
 import { toggleFavoriteButton } from '../api/roomApi';
+import Slider from 'react-slick';
 
 const HomeContainer = () => {
   const { data, isLoading, isFetching, refetch, error } = useQuery<IRoom[]>({
@@ -35,14 +36,31 @@ const HomeContainer = () => {
           data.map((room) => (
             <H.Card key={room.id}>
               <H.ImageWrapper>
-                {room.images ? (
-                  <H.Image
-                    src={`http://localhost:4000/uploads/${room.images[0].file_name}`}
-                    alt={`숙소`}
-                  />
+                {room.images && room.images.length > 0 ? (
+                  <Slider
+                    dots={false}
+                    arrows={false}
+                    infinite
+                    speed={400}
+                    slidesToShow={1}
+                    slidesToScroll={1}
+                    autoplay
+                    autoplaySpeed={3000}
+                    cssEase="linear"
+                    pauseOnHover
+                  >
+                    {room.images.map((image, index) => (
+                      <H.Image
+                        key={index}
+                        src={`${import.meta.env.VITE_BACKEND_URL}/uploads/${image.file_name}`}
+                        alt={`숙소 이미지 ${index + 1}`}
+                      />
+                    ))}
+                  </Slider>
                 ) : (
                   <H.Placeholder>이미지를 업로드하세요</H.Placeholder>
                 )}
+
                 <H.FavoriteButton
                   aria-label="찜하기"
                   $liked={room.liked!}

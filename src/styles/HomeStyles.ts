@@ -41,18 +41,24 @@ export const Card = styled.div`
   }
 `;
 
+export const Image = styled.img`
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+`;
+
 export const ImageWrapper = styled.div`
   position: relative;
   width: 100%;
   height: 200px;
-  overflow: hidden;
-  border-radius: 12px 12px 0 0;
-`;
 
-export const Image = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  // 슬라이더 안에서 이미지 크기 고정
+  .slick-slider,
+  .slick-list,
+  .slick-track,
+  .slick-slide > div {
+    height: 100%;
+  }
 `;
 
 export const Placeholder = styled.div`

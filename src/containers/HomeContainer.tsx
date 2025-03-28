@@ -58,7 +58,7 @@ const HomeContainer = () => {
                     {room.images.map((image, index) => (
                       <H.Image
                         key={index}
-                        src={`${import.meta.env.VITE_BACKEND_URL}/uploads/${image.file_name}`}
+                        src={import.meta.env.VITE_BACKEND_URL + image.file_url}
                         alt={`숙소 이미지 ${index + 1}`}
                       />
                     ))}

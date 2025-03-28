@@ -17,55 +17,42 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { IRoom } from 'src/types/room';
+import type { IRoom } from 'src/types/room';
 import { fetchRooms } from 'src/api/roomApi';
 import { rq_datailPageCallOption } from 'src/utils/reactQueryOption';
 import Spinner from '@/components/Spinner';
 import Error500 from '@/components/error/Error500';
 
-// Sample data - in a real app, this would come from an API or database
-const accommodation = {
-  id: '1',
-  title: '아름다운 해변가 펜션',
-  description:
-    '바다가 보이는 아름다운 펜션입니다. 조용하고 평화로운 분위기에서 휴식을 취하실 수 있습니다. 모든 객실에서 바다 전망을 감상하실 수 있으며, 깨끗하고 현대적인 시설을 갖추고 있습니다. 해변까지는 도보로 5분 거리에 있어 편리하게 이용하실 수 있습니다.',
-  address: '부산광역시 해운대구 해변로 123',
-  price: 150000,
-  amenities: ['무료 와이파이', '에어컨', '주방', '세탁기', '주차장', '수영장'],
-  images: [
-    '/placeholder.svg?height=600&width=800',
-    '/placeholder.svg?height=600&width=800',
-    '/placeholder.svg?height=600&width=800',
-    '/placeholder.svg?height=600&width=800',
-    '/placeholder.svg?height=600&width=800',
-  ],
-  reviews: [
-    {
-      id: 'r1',
-      user: '김철수',
-      rating: 5,
-      date: '2023-08-15',
-      comment:
-        '정말 아름다운 곳이었습니다. 바다 전망이 환상적이고 시설도 깨끗했어요. 다음에 또 방문하고 싶습니다.',
-    },
-    {
-      id: 'r2',
-      user: '이영희',
-      rating: 4,
-      date: '2023-07-22',
-      comment:
-        '전체적으로 만족스러웠습니다. 다만 주변에 마트가 조금 멀어서 불편했어요. 하지만 경치는 정말 최고였습니다!',
-    },
-    {
-      id: 'r3',
-      user: '박지민',
-      rating: 5,
-      date: '2023-06-30',
-      comment:
-        '가족 여행으로 방문했는데 아이들도 너무 좋아했어요. 특히 수영장이 있어서 좋았습니다. 호스트분도 친절하셨고 다음에 또 오고 싶네요.',
-    },
-  ],
-};
+// Sample amenities - in a real app, this would come from an API or database
+const amenities = ['무료 와이파이', '에어컨', '주방', '세탁기', '주차장', '수영장'];
+
+// Sample reviews - in a real app, this would come from an API or database
+const sampleReviews = [
+  {
+    id: 'r1',
+    user: '김철수',
+    rating: 5,
+    date: '2023-08-15',
+    comment:
+      '정말 아름다운 곳이었습니다. 바다 전망이 환상적이고 시설도 깨끗했어요. 다음에 또 방문하고 싶습니다.',
+  },
+  {
+    id: 'r2',
+    user: '이영희',
+    rating: 4,
+    date: '2023-07-22',
+    comment:
+      '전체적으로 만족스러웠습니다. 다만 주변에 마트가 조금 멀어서 불편했어요. 하지만 경치는 정말 최고였습니다!',
+  },
+  {
+    id: 'r3',
+    user: '박지민',
+    rating: 5,
+    date: '2023-06-30',
+    comment:
+      '가족 여행으로 방문했는데 아이들도 너무 좋아했어요. 특히 수영장이 있어서 좋았습니다. 호스트분도 친절하셨고 다음에 또 오고 싶네요.',
+  },
+];
 
 const RoomDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -82,16 +69,11 @@ const RoomDetail = () => {
     ...rq_datailPageCallOption,
   });
 
-  if (isLoading) return <Spinner />;
-  if (error || !room) return <Error500 onRetry={refetch} />;
-
-  console.log(`Room: ${JSON.stringify(room)}`);
-
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [newReview, setNewReview] = useState('');
   const [newRating, setNewRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
-  const [reviews, setReviews] = useState(accommodation.reviews);
+  const [reviews, setReviews] = useState(sampleReviews);
 
   // Date picker state
   const [date, setDate] = useState<DateRange | undefined>();
@@ -106,22 +88,29 @@ const RoomDetail = () => {
 
   // Update nights and total price when dates change
   useEffect(() => {
-    if (date?.from && date?.to) {
+    if (date?.from && date?.to && room?.price) {
       const nightCount = differenceInDays(date.to, date.from);
       setNights(nightCount);
-      setTotalPrice(accommodation.price * nightCount + 50000 + 30000);
+      setTotalPrice((room.price || 0) * nightCount + 50000 + 30000);
     } else {
       setNights(0);
       setTotalPrice(0);
     }
-  }, [date]);
+  }, [date, room?.price]);
+
+  if (isLoading) return <Spinner />;
+  if (error || !room) return <Error500 onRetry={refetch} />;
+
+  console.log(`Room: ${JSON.stringify(room)}`);
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev === accommodation.images.length - 1 ? 0 : prev + 1));
+    if (!room.images || room.images.length === 0) return;
+    setCurrentImageIndex((prev) => (prev === room.images!.length - 1 ? 0 : prev + 1));
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev === 0 ? accommodation.images.length - 1 : prev - 1));
+    if (!room.images || room.images.length === 0) return;
+    setCurrentImageIndex((prev) => (prev === 0 ? room.images!.length - 1 : prev - 1));
   };
 
   const handleSubmitReview = (e: React.FormEvent) => {
@@ -159,80 +148,95 @@ const RoomDetail = () => {
     }
   };
 
+  // Default image if no images are available
+  const defaultImage = '/noImage.svg?height=600&width=800';
+  const currentImage =
+    room.images && room.images.length > 0
+      ? import.meta.env.VITE_BACKEND_URL + room.images[currentImageIndex].file_url
+      : defaultImage;
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">{accommodation.title}</h1>
+      <h1 className="text-3xl font-bold mb-6">{room.title}</h1>
 
       {/* Image Gallery */}
       <div className="relative mb-8">
         <div className="relative h-[400px] md:h-[500px] rounded-xl overflow-hidden">
           <img
-            src={accommodation.images[currentImageIndex] || '/placeholder.svg'}
-            alt={`${accommodation.title} 이미지 ${currentImageIndex + 1}`}
+            src={currentImage || '/noImage.svg'}
+            alt={`${room.title} 이미지 ${currentImageIndex + 1}`}
             className="object-cover w-full h-full absolute inset-0"
           />
-          <Button
-            variant="outline"
-            size="icon"
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
-            onClick={prevImage}
-          >
-            <ChevronLeft className="h-6 w-6" />
-            <span className="sr-only">이전 이미지</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
-            onClick={nextImage}
-          >
-            <ChevronRight className="h-6 w-6" />
-            <span className="sr-only">다음 이미지</span>
-          </Button>
+          {room.images && room.images.length > 1 && (
+            <>
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
+                onClick={prevImage}
+              >
+                <ChevronLeft className="h-6 w-6" />
+                <span className="sr-only">이전 이미지</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
+                onClick={nextImage}
+              >
+                <ChevronRight className="h-6 w-6" />
+                <span className="sr-only">다음 이미지</span>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Thumbnails */}
-        <div className="flex mt-4 space-x-2 overflow-x-auto pb-2">
-          {accommodation.images.map((image, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentImageIndex(index)}
-              className={`flex-shrink-0 h-20 w-20 rounded-md overflow-hidden border-2 ${
-                index === currentImageIndex ? 'border-primary' : 'border-transparent'
-              }`}
-            >
-              <img
-                src={image || '/placeholder.svg'}
-                alt={`썸네일 ${index + 1}`}
-                className="object-cover h-full w-full"
-              />
-            </button>
-          ))}
-        </div>
+        {room.images && room.images.length > 0 && (
+          <div className="flex mt-4 space-x-2 overflow-x-auto pb-2">
+            {room.images.map((image, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`flex-shrink-0 h-20 w-20 rounded-md overflow-hidden border-2 ${
+                  index === currentImageIndex ? 'border-primary' : 'border-transparent'
+                }`}
+              >
+                <img
+                  src={import.meta.env.VITE_BACKEND_URL + image.file_url || '/noImage.svg'}
+                  alt={`썸네일 ${index + 1}`}
+                  className="object-cover h-full w-full"
+                />
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Full screen image dialog */}
-        <div className="mt-4">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="w-full md:w-auto">
-                모든 사진 보기
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {accommodation.images.map((image, index) => (
-                  <div key={index} className="relative aspect-square rounded-md overflow-hidden">
-                    <img
-                      src={image || '/placeholder.svg'}
-                      alt={`${accommodation.title} 이미지 ${index + 1}`}
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-                ))}
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
+        {room.images && room.images.length > 0 && (
+          <div className="mt-4">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full md:w-auto">
+                  모든 사진 보기
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {room.images.map((image, index) => (
+                    <div key={index} className="relative aspect-square rounded-md overflow-hidden">
+                      <img
+                        src={import.meta.env.VITE_BACKEND_URL + image.file_url || '/noImage.svg'}
+                        alt={`${room.title} 이미지 ${index + 1}`}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
       </div>
 
       <div className="grid md:grid-cols-3 gap-8">
@@ -240,16 +244,20 @@ const RoomDetail = () => {
           {/* Accommodation Details */}
           <div className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">숙소 정보</h2>
-            <p className="text-gray-700 mb-6">{accommodation.description}</p>
+            <p className="text-gray-700 mb-6">{room.content}</p>
 
-            <div className="flex items-center text-gray-600 mb-6">
-              <MapPin className="mr-2 h-5 w-5" />
-              <span>{accommodation.address}</span>
-            </div>
+            {room.address && (
+              <div className="flex items-center text-gray-600 mb-6">
+                <MapPin className="mr-2 h-5 w-5" />
+                <span>
+                  {room.address} {room.address_dtl ? room.address_dtl : ''}
+                </span>
+              </div>
+            )}
 
             <h3 className="text-xl font-semibold mb-3">편의 시설</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {accommodation.amenities.map((amenity, index) => (
+              {amenities.map((amenity, index) => (
                 <div key={index} className="flex items-center">
                   <div className="h-2 w-2 rounded-full bg-primary mr-2"></div>
                   <span>{amenity}</span>
@@ -271,8 +279,8 @@ const RoomDetail = () => {
                       key={star}
                       className={`h-5 w-5 ${
                         star <= Number.parseFloat(calculateAverageRating() as string)
-                          ? 'fill-primary text-primary'
-                          : 'text-gray-300'
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'text-yellow-400'
                       }`}
                     />
                   ))}
@@ -293,7 +301,7 @@ const RoomDetail = () => {
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
                         key={star}
-                        className={`h-4 w-4 ${star <= review.rating ? 'fill-primary text-primary' : 'text-gray-300'}`}
+                        className={`h-4 w-4 ${star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-yellow-400'}`}
                       />
                     ))}
                   </div>
@@ -321,8 +329,8 @@ const RoomDetail = () => {
                       <Star
                         className={`h-6 w-6 ${
                           star <= (hoverRating || newRating)
-                            ? 'fill-primary text-primary'
-                            : 'text-gray-300'
+                            ? 'fill-yellow-400 text-yellow-400'
+                            : 'text-yellow-400'
                         }`}
                       />
                     </button>
@@ -356,11 +364,11 @@ const RoomDetail = () => {
           <Card className="p-6 sticky top-8">
             <div className="flex items-center justify-between mb-6">
               <div className="text-2xl font-bold">
-                ₩{accommodation.price.toLocaleString()}
+                ₩{(Number(room.price) || 0).toLocaleString()}
                 <span className="text-sm font-normal text-gray-500"> / 박</span>
               </div>
               <div className="flex items-center">
-                <Star className="h-5 w-5 fill-primary text-primary mr-1" />
+                <Star className="h-5 w-5 fill-yellow-400 text-yellow-400 mr-1" />
                 <span>{calculateAverageRating()}</span>
               </div>
             </div>
@@ -442,9 +450,9 @@ const RoomDetail = () => {
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span>
-                    ₩{accommodation.price.toLocaleString()} x {nights}박
+                    ₩{(room.price || 0).toLocaleString()} x {nights}박
                   </span>
-                  <span>₩{(accommodation.price * nights).toLocaleString()}</span>
+                  <span>₩{((room.price || 0) * nights).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>청소비</span>

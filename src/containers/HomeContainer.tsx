@@ -4,13 +4,19 @@ import { useQuery } from '@tanstack/react-query';
 import { IRoom } from '../types/room';
 import Spinner from '../components/Spinner';
 import Error500 from '../components/error/Error500';
-import { toggleFavoriteButton } from '../api/roomApi';
+import { fetchRooms, toggleFavoriteButton } from '../api/roomApi';
 import Slider from 'react-slick';
+import { useNavigate } from 'react-router-dom';
+import { rq_realtimeCallOption } from '../utils/reactQueryOption';
 
 const HomeContainer = () => {
   const { data, isLoading, isFetching, refetch, error } = useQuery<IRoom[]>({
     queryKey: ['fetchRooms'],
+    queryFn: () => fetchRooms(),
+    ...rq_realtimeCallOption,
   });
+
+  const navigate = useNavigate();
 
   if (error) return <Error500 onRetry={refetch} />;
 
@@ -34,7 +40,7 @@ const HomeContainer = () => {
         ) : (
           data &&
           data.map((room) => (
-            <H.Card key={room.id}>
+            <H.Card key={room.id} onClick={() => navigate(`/room/${room.id}`)}>
               <H.ImageWrapper>
                 {room.images && room.images.length > 0 ? (
                   <Slider
@@ -70,9 +76,11 @@ const HomeContainer = () => {
                 </H.FavoriteButton>
               </H.ImageWrapper>
               <H.Info>
-                <H.Location>{room.address}</H.Location>
-                <H.Distance>100</H.Distance>
-                <H.Price>₩{Number(room.price)?.toLocaleString()} / 1박</H.Price>
+                <H.Location>{room.title}</H.Location>
+                <H.Distance>
+                  {room.address} {room.address_dtl}
+                </H.Distance>
+                <H.Price>₩{Number(room.price)?.toLocaleString()}</H.Price>
                 <H.Rating>⭐ {0}</H.Rating>
               </H.Info>
             </H.Card>

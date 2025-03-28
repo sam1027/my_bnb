@@ -7,6 +7,7 @@ import Error500 from '../components/error/Error500';
 import Slider from 'react-slick';
 import { fetchRooms } from '../api/roomApi';
 import { rq_datailPageCallOption } from '../utils/reactQueryOption';
+import { Button } from '@/components/ui/button';
 
 const RoomDetail = () => {
   const { id } = useParams<{ id: string }>();

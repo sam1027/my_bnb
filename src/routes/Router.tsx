@@ -5,6 +5,7 @@ import About from '../pages/About';
 import PrivateRoute from '../components/base/PrivateRoute';
 import Write from '../pages/Write';
 import RoomDetail from '../pages/RoomDetail';
+import Test from 'src/pages/Test';
 
 const Router = () => {
   return (
@@ -16,6 +17,7 @@ const Router = () => {
           <Route path="/write" element={<Write />} />
           <Route path="/about" element={<About />} />
           <Route path="/*" element={<NotFound />} />
+          <Route path="/test" element={<Test />} />
         </Route>
       </Routes>
     </BrowserRouter>

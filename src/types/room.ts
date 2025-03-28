@@ -19,6 +19,7 @@ export interface IRoom extends IFile {
   lon?: number;
   images?: IFile[];
   liked?: boolean;
+  reviews?: [];
 }
 
 export interface IRoomForm {

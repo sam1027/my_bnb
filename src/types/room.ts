@@ -25,10 +25,10 @@ export interface IRoom extends IFile {
 export interface IRoomForm {
   title: string;
   content: string;
-  price?: number | null;
-  address?: string;
-  address_dtl?: string;
-  lat?: number;
-  lon?: number;
+  price: number | null;
+  address: string;
+  address_dtl: string;
+  lat: number;
+  lon: number;
   images?: FileList;
 }

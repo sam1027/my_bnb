@@ -17,6 +17,10 @@ declare global {
 const schema = yup.object().shape({
   title: yup.string().required('제목을 입력하세요'),
   content: yup.string().required('내용을 입력하세요'),
+  address: yup.string().required('주소를 입력하세요'),
+  address_dtl: yup.string().required('상세 주소를 입력하세요'),
+  lat: yup.number().typeError('주소 입력 후 검색버튼을 눌러주세요').required('주소 입력 후 검색버튼을 눌러주세요'),
+  lon: yup.number().typeError('주소 입력 후 검색버튼을 눌러주세요').required('주소 입력 후 검색버튼을 눌러주세요'),
   price: yup
     .number()
     .transform((value, originalValue) => {
@@ -24,8 +28,9 @@ const schema = yup.object().shape({
     })
     .positive('가격은 0보다 커야 합니다')
     .integer('가격은 정수여야 합니다')
-    .nullable(),
-});
+    .required('가격을 입력하세요'),
+  images: yup.mixed().optional(),
+}) as yup.ObjectSchema<IRoomForm>;
 
 const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
 const MAX_IMAGE_COUNT = 10;
@@ -137,21 +142,28 @@ const WriteContainer = () => {
       <h2>숙박업소 등록</h2>
       <W.Form onSubmit={handleSubmit((data) => handleSaveData(data))}>
         {/* 제목 */}
-        <W.Label>제목 (필수)</W.Label>
+        <W.Label>제목</W.Label>
         <W.Input type="text" {...register('title')} placeholder="제목을 입력하세요" />
         {errors.title && <W.Error>{errors.title.message}</W.Error>}
 
         {/* 내용 */}
-        <W.Label>내용 (필수)</W.Label>
+        <W.Label>내용</W.Label>
         <W.Textarea {...register('content')} placeholder="숙소 설명을 입력하세요" />
         {errors.content && <W.Error>{errors.content.message}</W.Error>}
 
-        {/* 주소 */}
+        {/* 주소 검색 */}
         <KakaoMapWithSearch handleMapInfo={handleMapInfo} />
+
+        {/* 주소 */}
+        <W.Label>주소</W.Label>
+        <W.Input type="text" {...register('address')} readOnly placeholder="자동 입력" />
+        {errors.address && <W.Error>{errors.address.message}</W.Error>}
+        {/* {!errors.address && (errors.lat || errors.lon) && <W.Error>{errors.lat?.message || errors.lon?.message}</W.Error>} */}
 
         {/* 상세 주소 */}
         <W.Label>상세 주소</W.Label>
         <W.Input type="text" {...register('address_dtl')} placeholder="상세 주소를 입력하세요" />
+        {errors.address_dtl && <W.Error>{errors.address_dtl.message}</W.Error>}
 
         {/* 가격 */}
         <W.Label>1박 가격</W.Label>
@@ -164,10 +176,20 @@ const WriteContainer = () => {
 
         {/* 위도 & 경도 */}
         <W.Label>위도</W.Label>
-        <W.Input type="text" {...register('lat')} readOnly placeholder="자동 입력" />
+        <W.Input 
+          type="text" 
+          {...register('lat', { valueAsNumber: true })} 
+          readOnly 
+          placeholder="자동 입력" 
+        />
 
         <W.Label>경도</W.Label>
-        <W.Input type="text" {...register('lon')} readOnly placeholder="자동 입력" />
+        <W.Input 
+          type="text" 
+          {...register('lon', { valueAsNumber: true })} 
+          readOnly 
+          placeholder="자동 입력" 
+        />
 
         {/* 사진 업로드 */}
         <W.Label>사진 업로드 (최대 10장, 각 3MB 이하)</W.Label>

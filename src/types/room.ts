@@ -31,4 +31,8 @@ export interface IRoomForm {
   lat: number;
   lon: number;
   images?: FileList;
+  amenities?: string[];
+  max_guests?: number;
+  service_fee?: number;
+  cleaning_fee?: number;
 }

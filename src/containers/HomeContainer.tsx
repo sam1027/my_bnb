@@ -24,7 +24,10 @@ const HomeContainer = () => {
   console.log('Is Array?', Array.isArray(data));
   console.log('Data:', data);
 
-  const handleFavorite = async (roomId?: string) => {
+  const handleFavorite = async (e?: React.MouseEvent, roomId?: string) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
     if (!roomId) return;
 
     const result = await toggleFavoriteButton(roomId);
@@ -72,7 +75,7 @@ const HomeContainer = () => {
                   <H.FavoriteButton
                     aria-label="찜하기"
                     $liked={room.liked!}
-                    onClick={() => handleFavorite(room.id)}
+                    onClick={(e) => handleFavorite(e, room.id)}
                   >
                     <FaHeart />
                   </H.FavoriteButton>

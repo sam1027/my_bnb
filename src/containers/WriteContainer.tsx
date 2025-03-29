@@ -257,7 +257,11 @@ const WriteContainer = () => {
     }
   }
 
-  const nextStep = async () => {
+  const nextStep = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+    }
+    
     let isValid = false
 
     // 현재 단계에 따라 다른 필드 검증
@@ -689,7 +693,7 @@ const WriteContainer = () => {
           )}
 
           {currentStep < totalSteps ? (
-            <Button type="button" onClick={nextStep}>
+            <Button type="button" onClick={(e) => nextStep(e)}>
               다음 <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (

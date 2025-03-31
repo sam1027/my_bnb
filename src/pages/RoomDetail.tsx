@@ -17,42 +17,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import type { IRoom } from 'src/types/room';
-import { fetchRoomDetail } from 'src/api/roomApi';
+import type { IReview, IRoom } from 'src/types/room';
+import { fetchReviews, fetchRoomDetail, insertReview } from 'src/api/roomApi';
 import { rq_datailPageCallOption } from 'src/utils/reactQueryOption';
 import Spinner from '@/components/Spinner';
 import Error500 from '@/components/error/Error500';
-
-// Sample amenities - in a real app, this would come from an API or database
-const amenities = ['무료 와이파이', '에어컨', '주방', '세탁기', '주차장', '수영장'];
-
-// Sample reviews - in a real app, this would come from an API or database
-const sampleReviews = [
-  {
-    id: 'r1',
-    user: '김철수',
-    rating: 5,
-    date: '2023-08-15',
-    comment:
-      '정말 아름다운 곳이었습니다. 바다 전망이 환상적이고 시설도 깨끗했어요. 다음에 또 방문하고 싶습니다.',
-  },
-  {
-    id: 'r2',
-    user: '이영희',
-    rating: 4,
-    date: '2023-07-22',
-    comment:
-      '전체적으로 만족스러웠습니다. 다만 주변에 마트가 조금 멀어서 불편했어요. 하지만 경치는 정말 최고였습니다!',
-  },
-  {
-    id: 'r3',
-    user: '박지민',
-    rating: 5,
-    date: '2023-06-30',
-    comment:
-      '가족 여행으로 방문했는데 아이들도 너무 좋아했어요. 특히 수영장이 있어서 좋았습니다. 호스트분도 친절하셨고 다음에 또 오고 싶네요.',
-  },
-];
 
 const RoomDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -72,11 +41,22 @@ const RoomDetail = () => {
     ...rq_datailPageCallOption,
   });
 
+  const { data: reviews, isLoading: isReviewsLoading, error: reviewsError, refetch: refetchReviews } = useQuery<IReview[]>({
+    queryKey: ['fetchReviews', id],
+    queryFn: () => {
+      if(!id) throw new Error('Room ID is required');
+      return fetchReviews(id);
+    },
+    enabled: !!id,
+    ...rq_datailPageCallOption,
+  });
+
+  console.log(`reviews: ${JSON.stringify(reviews)}`);
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [newReview, setNewReview] = useState('');
   const [newRating, setNewRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
-  const [reviews, setReviews] = useState(sampleReviews);
 
   // Date picker state
   const [date, setDate] = useState<DateRange | undefined>();
@@ -111,7 +91,7 @@ const RoomDetail = () => {
   if (isLoading) return <Spinner />;
   if (error || !room) return <Error500 onRetry={refetch} />;
 
-  console.log(`Room: ${JSON.stringify(room)}`);
+  // console.log(`Room: ${JSON.stringify(room)}`);
 
   const nextImage = () => {
     if (!room.images || room.images.length === 0) return;
@@ -123,25 +103,34 @@ const RoomDetail = () => {
     setCurrentImageIndex((prev) => (prev === 0 ? room.images!.length - 1 : prev - 1));
   };
 
-  const handleSubmitReview = (e: React.FormEvent) => {
+  // 후기 등록
+  const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (newReview.trim() === '' || newRating === 0) return;
 
-    const newReviewObj = {
-      id: `r${reviews.length + 1}`,
-      user: '게스트',
-      rating: newRating,
-      date: new Date().toISOString().split('T')[0],
-      comment: newReview,
-    };
+    const formData = new FormData();
+    formData.append('room_id', room.id!);
+    formData.append('reg_id', '1');
+    formData.append('rating', newRating.toString());
+    formData.append('comment', newReview);
 
-    setReviews([...reviews, newReviewObj]);
-    setNewReview('');
-    setNewRating(0);
+    // for (const [key, value] of formData.entries()) {
+    //   console.log(`${key}: ${value}`);
+    // }
+
+    const response = await insertReview(formData);
+
+    if (response) {
+      alert('후기가 등록되었습니다.');
+      setNewReview('');
+      setNewRating(0);
+      refetchReviews();
+    }
   };
 
   const calculateAverageRating = () => {
-    if (reviews.length === 0) return 0;
+    if (!reviews || reviews.length === 0) return 0;
     const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
     return (sum / reviews.length).toFixed(1);
   };
@@ -281,7 +270,7 @@ const RoomDetail = () => {
           {/* Reviews Section */}
           <div>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold">후기 ({reviews.length})</h2>
+              <h2 className="text-2xl font-semibold">후기 ({ reviews?.length || 0 })</h2>
               <div className="flex items-center">
                 <div className="flex mr-2">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -301,11 +290,11 @@ const RoomDetail = () => {
 
             {/* Review List */}
             <div className="space-y-6">
-              {reviews.map((review) => (
+              {reviews?.map((review) => (
                 <Card key={review.id} className="p-4">
                   <div className="flex justify-between mb-2">
-                    <div className="font-medium">{review.user}</div>
-                    <div className="text-sm text-gray-500">{review.date}</div>
+                    <div className="font-medium">{review.reg_name}</div>
+                    <div className="text-sm text-gray-500">{review.updated_at}</div>
                   </div>
                   <div className="flex mb-3">
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -322,10 +311,7 @@ const RoomDetail = () => {
 
             {/* Add Review Form */}
             <form onSubmit={handleSubmitReview} className="mt-8">
-              <h3 className="text-xl font-semibold mb-4">후기 작성</h3>
-
               <div className="mb-4">
-                <label className="block mb-2">평점</label>
                 <div className="flex">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -349,9 +335,6 @@ const RoomDetail = () => {
               </div>
 
               <div className="mb-4">
-                <label htmlFor="review" className="block mb-2">
-                  후기 내용
-                </label>
                 <Textarea
                   id="review"
                   value={newReview}

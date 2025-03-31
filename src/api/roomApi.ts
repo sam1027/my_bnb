@@ -23,3 +23,15 @@ export const toggleFavoriteButton = async (roomId: string) => {
   const response = await apiClient.post('/bnb/favorite', { roomId });
   return response.data;
 };
+
+// 후기 등록
+export const insertReview = async (data: FormData) => {
+  const response = await apiClient.post('/bnb/review', data);
+  return response.data;
+};
+
+// 후기 조회
+export const fetchReviews = async (roomId: string) => {
+  const response = await apiClient.get(`/bnb/review?room_id=${roomId}`);
+  return response.data;
+};

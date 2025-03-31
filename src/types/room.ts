@@ -10,6 +10,15 @@ export interface IFile {
   file_type: string;
 }
 
+export interface IReview {
+  id: string;
+  room_id: string;
+  reg_id: string;
+  reg_name: string;
+  rating: number;
+  comment: string;
+  updated_at: string;
+}
 export interface IRoom extends IFile {
   id?: string;
   title: string;

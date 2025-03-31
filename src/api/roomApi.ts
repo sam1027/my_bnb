@@ -7,9 +7,14 @@ export const insertRoom = async (data: FormData) => {
 };
 
 // 숙박업소 조회
-export const fetchRooms = async (id?: string) => {
-  const url = id ? `/bnb?id=${id}` : '/bnb';
-  const response = await apiClient.get(url);
+export const fetchRooms = async () => {
+  const response = await apiClient.get('/bnb');
+  return response.data;
+};
+
+// 숙박업소 상세 조회
+export const fetchRoomDetail = async (id: string) => {
+  const response = await apiClient.get(`/bnb/detail?id=${id}`);
   return response.data;
 };
 

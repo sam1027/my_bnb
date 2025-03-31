@@ -1,3 +1,5 @@
+import { ICode } from "./code";
+
 export interface IFile {
   file_id: string;
   room_id: string;
@@ -20,6 +22,10 @@ export interface IRoom extends IFile {
   images?: IFile[];
   liked?: boolean;
   reviews?: [];
+  service_fee?: number;
+  cleaning_fee?: number;
+  max_guests?: number;
+  amenities?: ICode[];
 }
 
 export interface IRoomForm {

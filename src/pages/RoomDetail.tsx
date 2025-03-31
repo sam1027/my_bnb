@@ -18,7 +18,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import type { IRoom } from 'src/types/room';
-import { fetchRooms } from 'src/api/roomApi';
+import { fetchRoomDetail } from 'src/api/roomApi';
 import { rq_datailPageCallOption } from 'src/utils/reactQueryOption';
 import Spinner from '@/components/Spinner';
 import Error500 from '@/components/error/Error500';
@@ -63,7 +63,10 @@ const RoomDetail = () => {
     refetch,
   } = useQuery<IRoom[], Error, IRoom, [string, string | undefined]>({
     queryKey: ['fetchRoomDetail', id],
-    queryFn: () => fetchRooms(id),
+    queryFn: () => {
+      if (!id) throw new Error('Room ID is required');
+      return fetchRoomDetail(id);
+    },
     enabled: !!id,
     select: (data) => data[0],
     ...rq_datailPageCallOption,
@@ -86,12 +89,19 @@ const RoomDetail = () => {
   const [nights, setNights] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
 
+  // 청소비
+  const cleaningFee = room && Number(room.cleaning_fee) || 0;
+  // 서비스 수수료
+  const serviceFee = room && Number(room.service_fee) || 0;
+  // 최대 인원
+  const maxGuests = room && Number(room.max_guests) || 0;
+
   // Update nights and total price when dates change
   useEffect(() => {
     if (date?.from && date?.to && room?.price) {
       const nightCount = differenceInDays(date.to, date.from);
       setNights(nightCount);
-      setTotalPrice((room.price || 0) * nightCount + 50000 + 30000);
+      setTotalPrice((room.price || 0) * nightCount + cleaningFee + serviceFee);
     } else {
       setNights(0);
       setTotalPrice(0);
@@ -137,7 +147,7 @@ const RoomDetail = () => {
   };
 
   const incrementGuests = () => {
-    if (guestCount < 10) {
+    if (guestCount < maxGuests) {
       setGuestCount(guestCount + 1);
     }
   };
@@ -257,10 +267,10 @@ const RoomDetail = () => {
 
             <h3 className="text-xl font-semibold mb-3">편의 시설</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {amenities.map((amenity, index) => (
+              {room.amenities && room.amenities.map((amenity, index) => (
                 <div key={index} className="flex items-center">
                   <div className="h-2 w-2 rounded-full bg-primary mr-2"></div>
-                  <span>{amenity}</span>
+                  <span>{amenity.code_name}</span>
                 </div>
               ))}
             </div>
@@ -432,7 +442,7 @@ const RoomDetail = () => {
                     variant="outline"
                     size="icon"
                     onClick={incrementGuests}
-                    disabled={guestCount >= 10}
+                    disabled={guestCount >= maxGuests}
                     className="h-8 w-8"
                   >
                     <Plus className="h-4 w-4" />
@@ -456,11 +466,11 @@ const RoomDetail = () => {
                 </div>
                 <div className="flex justify-between">
                   <span>청소비</span>
-                  <span>₩50,000</span>
+                  <span>₩{cleaningFee.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>서비스 수수료</span>
-                  <span>₩30,000</span>
+                  <span>₩{serviceFee.toLocaleString()}</span>
                 </div>
                 <Separator className="my-3" />
                 <div className="flex justify-between font-bold">

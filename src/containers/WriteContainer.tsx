@@ -33,26 +33,8 @@ import { Separator } from "@/components/ui/separator"
 import { Progress } from "@/components/ui/progress"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Slider } from "@/components/ui/slider"
-
-// 편의시설 목록 상수 추가
-const AMENITIES = [
-  { id: "wifi", label: "무료 와이파이" },
-  { id: "parking", label: "주차장" },
-  { id: "aircon", label: "에어컨" },
-  { id: "kitchen", label: "주방" },
-  { id: "washer", label: "세탁기" },
-  { id: "dryer", label: "건조기" },
-  { id: "tv", label: "TV" },
-  { id: "heating", label: "난방" },
-  { id: "workspace", label: "업무 공간" },
-  { id: "pool", label: "수영장" },
-  { id: "hottub", label: "온수 욕조" },
-  { id: "bbq", label: "BBQ 그릴" },
-  { id: "breakfast", label: "아침식사" },
-  { id: "gym", label: "헬스장" },
-  { id: "ev_charger", label: "전기차 충전기" },
-  { id: "crib", label: "아기 침대" },
-]
+import { useCodeStore } from "src/store/zustand/useCodeStore"
+import { CodeGroupIds } from "src/types/code"
 
 // 각 단계별 스키마 정의
 const step1Schema = yup.object().shape({
@@ -133,6 +115,13 @@ const WriteContainer = () => {
   const progressPercentage = (currentStep / totalSteps) * 100
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
   const [guestCount, setGuestCount] = useState(4)
+  const codeGroupId = CodeGroupIds.AMENITY;
+  const { codes: amenitiesCodes, fetchCodesByGroup } = useCodeStore();
+
+  // 편의시설 코드 조회
+  useEffect(() => {
+    fetchCodesByGroup(codeGroupId);
+  }, [])
 
   const images = watch("images")
 
@@ -402,18 +391,18 @@ const WriteContainer = () => {
                 <Label>편의시설</Label>
                 <div className="max-h-60 overflow-y-auto border rounded-md p-4">
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {AMENITIES.map((amenity) => (
-                      <div key={amenity.id} className="flex items-center space-x-2">
+                    {amenitiesCodes[codeGroupId] &&amenitiesCodes[codeGroupId].map((amenity) => (
+                      <div key={amenity.code_id} className="flex items-center space-x-2">
                         <Checkbox
-                          id={amenity.id}
-                          checked={selectedAmenities.includes(amenity.id)}
-                          onCheckedChange={() => toggleAmenity(amenity.id)}
+                          id={amenity.code_id}
+                          checked={selectedAmenities.includes(amenity.code_id)}
+                          onCheckedChange={() => toggleAmenity(amenity.code_id)}
                         />
                         <label
-                          htmlFor={amenity.id}
+                          htmlFor={amenity.code_id}
                           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
-                          {amenity.label}
+                          {amenity.code_name}
                         </label>
                       </div>
                     ))}
@@ -622,7 +611,7 @@ const WriteContainer = () => {
                     <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2">
                       {selectedAmenities.map((id) => (
                         <span key={id} className="bg-muted px-2 py-1 rounded-md text-sm">
-                          {AMENITIES.find((a) => a.id === id)?.label}
+                          {amenitiesCodes[codeGroupId] && amenitiesCodes[codeGroupId].find((a) => a.code_id === id)?.code_name}
                         </span>
                       ))}
                     </div>

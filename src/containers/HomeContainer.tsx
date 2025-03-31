@@ -12,7 +12,7 @@ import { rq_realtimeCallOption } from '../utils/reactQueryOption';
 const HomeContainer = () => {
   const { data, isLoading, isFetching, refetch, error } = useQuery<IRoom[]>({
     queryKey: ['fetchRooms'],
-    queryFn: () => fetchRooms(),
+    queryFn: fetchRooms,
     ...rq_realtimeCallOption,
   });
 

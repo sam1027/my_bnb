@@ -47,7 +47,11 @@ const KakaoMapViewer = (prop: IProps) => {
   // 지도 초기화
   useEffect(() => {
     if (!ready || !mapRef.current || !window.kakao?.maps) {
-      console.log('지도 초기화 조건:', { ready, mapRef: !!mapRef.current, kakao: !!window.kakao?.maps });
+      console.log('지도 초기화 조건:', {
+        ready,
+        mapRef: !!mapRef.current,
+        kakao: !!window.kakao?.maps,
+      });
       return;
     }
 
@@ -58,14 +62,14 @@ const KakaoMapViewer = (prop: IProps) => {
       };
 
       const mapInstance = new window.kakao.maps.Map(mapRef.current, options);
-      if(prop.setMap) prop.setMap(mapInstance);
+      if (prop.setMap) prop.setMap(mapInstance);
 
       // 초기 마커 생성
       const initialMarker = new window.kakao.maps.Marker({
         position: options.center,
-        map: mapInstance
+        map: mapInstance,
       });
-      if(prop.setMarker) prop.setMarker(initialMarker);
+      if (prop.setMarker) prop.setMarker(initialMarker);
     } catch (error) {
       console.error('지도 초기화 실패:', error);
     }

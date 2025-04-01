@@ -13,16 +13,16 @@ export const useCodeStore = create<CodeState>((set, get) => ({
   isLoading: false,
   fetchCodesByGroup: async (code_group_id: string) => {
     // 이미 존재하면 skip
-    if(get().codes[code_group_id]) return;
-    
+    if (get().codes[code_group_id]) return;
+
     set({ isLoading: true });
     try {
-        const codeList = await fetchCodes(code_group_id);
-        set({ codes: { ...get().codes, [code_group_id]: codeList } });
+      const codeList = await fetchCodes(code_group_id);
+      set({ codes: { ...get().codes, [code_group_id]: codeList } });
     } catch (error) {
-        console.error(`Error fetching codes By [${code_group_id}]:`, error);
+      console.error(`Error fetching codes By [${code_group_id}]:`, error);
     } finally {
-        set({ isLoading: false });
+      set({ isLoading: false });
     }
-  }
+  },
 }));

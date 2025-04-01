@@ -17,8 +17,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import type { IReview, IRoom } from 'src/types/room';
-import { fetchReviews, fetchRoomDetail, insertReview } from 'src/api/roomApi';
+import type { IBookingForm, IReview, IReviewForm, IRoom } from 'src/types/room';
+import { fetchReviews, fetchRoomDetail, insertBooking, insertReview } from 'src/api/roomApi';
 import { rq_datailPageCallOption } from 'src/utils/reactQueryOption';
 import Spinner from '@/components/Spinner';
 import Error500 from '@/components/error/Error500';
@@ -42,10 +42,15 @@ const RoomDetail = () => {
     ...rq_datailPageCallOption,
   });
 
-  const { data: reviews, isLoading: isReviewsLoading, error: reviewsError, refetch: refetchReviews } = useQuery<IReview[]>({
+  const {
+    data: reviews,
+    isLoading: isReviewsLoading,
+    error: reviewsError,
+    refetch: refetchReviews,
+  } = useQuery<IReview[]>({
     queryKey: ['fetchReviews', id],
     queryFn: () => {
-      if(!id) throw new Error('Room ID is required');
+      if (!id) throw new Error('Room ID is required');
       return fetchReviews(id);
     },
     enabled: !!id,
@@ -71,11 +76,11 @@ const RoomDetail = () => {
   const [totalPrice, setTotalPrice] = useState(0);
 
   // 청소비
-  const cleaningFee = room && Number(room.cleaning_fee) || 0;
+  const cleaningFee = (room && Number(room.cleaning_fee)) || 0;
   // 서비스 수수료
-  const serviceFee = room && Number(room.service_fee) || 0;
+  const serviceFee = (room && Number(room.service_fee)) || 0;
   // 최대 인원
-  const maxGuests = room && Number(room.max_guests) || 0;
+  const maxGuests = (room && Number(room.max_guests)) || 0;
 
   // Update nights and total price when dates change
   useEffect(() => {
@@ -107,20 +112,18 @@ const RoomDetail = () => {
   // 후기 등록
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (newReview.trim() === '' || newRating === 0) return;
 
-    const formData = new FormData();
-    formData.append('room_id', room.id!);
-    formData.append('reg_id', '1');
-    formData.append('rating', newRating.toString());
-    formData.append('comment', newReview);
+    const reviewData: IReviewForm = {
+      room_id: room.id!,
+      rating: newRating,
+      comment: newReview,
+    };
 
-    // for (const [key, value] of formData.entries()) {
-    //   console.log(`${key}: ${value}`);
-    // }
+    console.log('Review Data:', reviewData);
 
-    const response = await insertReview(formData);
+    const response = await insertReview(reviewData);
 
     if (response) {
       alert('후기가 등록되었습니다.');
@@ -145,6 +148,25 @@ const RoomDetail = () => {
   const decrementGuests = () => {
     if (guestCount > 1) {
       setGuestCount(guestCount - 1);
+    }
+  };
+
+  // 예약하기
+  const handleBooking = async () => {
+    const bookingData: IBookingForm = {
+      room_id: room.id!,
+      checkin_dt: date?.from ? format(date.from, 'yyyy-MM-dd') : '',
+      checkout_dt: date?.to ? format(date.to, 'yyyy-MM-dd') : '',
+      guest_count: guestCount,
+      total_price: totalPrice,
+    };
+
+    console.log('Booking Data:', bookingData);
+
+    const response = await insertBooking(bookingData);
+
+    if (response) {
+      alert('예약이 완료되었습니다.');
     }
   };
 
@@ -248,25 +270,26 @@ const RoomDetail = () => {
 
             <h3 className="text-xl font-semibold mb-3">편의 시설</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-10">
-              {room.amenities && room.amenities.map((amenity, index) => (
-                <div key={index} className="flex items-center">
-                  <div className="h-2 w-2 rounded-full bg-primary mr-2"></div>
-                  <span>{amenity.code_name}</span>
-                </div>
-              ))}
+              {room.amenities &&
+                room.amenities.map((amenity, index) => (
+                  <div key={index} className="flex items-center">
+                    <div className="h-2 w-2 rounded-full bg-primary mr-2"></div>
+                    <span>{amenity.code_name}</span>
+                  </div>
+                ))}
             </div>
 
             <h3 className="text-xl font-semibold mb-3">위치</h3>
             {room.address && (
               <>
-              <div className="flex items-center text-gray-600 mb-6">
-                <MapPin className="mr-2 h-5 w-5" />
-                <span>
-                  {room.address} {room.address_dtl ? room.address_dtl : ''}
+                <div className="flex items-center text-gray-600 mb-6">
+                  <MapPin className="mr-2 h-5 w-5" />
+                  <span>
+                    {room.address} {room.address_dtl ? room.address_dtl : ''}
                   </span>
                 </div>
 
-                <KakaoMapViewer lat={room.lat} lon={room.lon}/>
+                <KakaoMapViewer lat={room.lat} lon={room.lon} />
               </>
             )}
           </div>
@@ -276,7 +299,7 @@ const RoomDetail = () => {
           {/* Reviews Section */}
           <div>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold">후기 ({ reviews?.length || 0 })</h2>
+              <h2 className="text-2xl font-semibold">후기 ({reviews?.length || 0})</h2>
               <div className="flex items-center">
                 <div className="flex mr-2">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -441,7 +464,11 @@ const RoomDetail = () => {
               </div>
             </div>
 
-            <Button className="w-full mb-4" disabled={!date?.from || !date?.to}>
+            <Button
+              className="w-full mb-4"
+              disabled={!date?.from || !date?.to}
+              onClick={handleBooking}
+            >
               예약하기
             </Button>
 

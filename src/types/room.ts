@@ -1,4 +1,4 @@
-import { ICode } from "./code";
+import { ICode } from './code';
 
 export interface IFile {
   file_id: string;
@@ -18,6 +18,12 @@ export interface IReview {
   rating: number;
   comment: string;
   updated_at: string;
+}
+
+export interface IReviewForm {
+  room_id: string;
+  rating: number;
+  comment: string;
 }
 export interface IRoom extends IFile {
   id?: string;
@@ -50,4 +56,12 @@ export interface IRoomForm {
   max_guests?: number;
   service_fee?: number;
   cleaning_fee?: number;
+}
+
+export interface IBookingForm {
+  room_id: string;
+  checkin_dt: string;
+  checkout_dt: string;
+  guest_count: number;
+  total_price: number;
 }

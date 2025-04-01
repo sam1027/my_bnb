@@ -42,57 +42,55 @@ const HomeContainer = () => {
       <H.Grid>
         {isLoading ? (
           <Spinner />
-        ) : (
-          Array.isArray(data) && data.length > 0 ? (
-            data.map((room) => (
-              <H.Card key={room.id} onClick={() => navigate(`/room/${room.id}`)}>
-                <H.ImageWrapper>
-                  {room.images && room.images.length > 0 ? (
-                    <Slider
-                      dots={false}
-                      arrows={false}
-                      infinite
-                      speed={400}
-                      slidesToShow={1}
-                      slidesToScroll={1}
-                      autoplay
-                      autoplaySpeed={3000}
-                      cssEase="linear"
-                      pauseOnHover
-                    >
-                      {room.images.map((image, index) => (
-                        <H.Image
-                          key={index}
-                          src={import.meta.env.VITE_BACKEND_URL + image.file_url}
-                          alt={`숙소 이미지 ${index + 1}`}
-                        />
-                      ))}
-                    </Slider>
-                  ) : (
-                    <H.Placeholder>이미지를 업로드하세요</H.Placeholder>
-                  )}
-
-                  <H.FavoriteButton
-                    aria-label="찜하기"
-                    $liked={room.liked!}
-                    onClick={(e) => handleFavorite(e, room.id)}
+        ) : Array.isArray(data) && data.length > 0 ? (
+          data.map((room) => (
+            <H.Card key={room.id} onClick={() => navigate(`/room/${room.id}`)}>
+              <H.ImageWrapper>
+                {room.images && room.images.length > 0 ? (
+                  <Slider
+                    dots={false}
+                    arrows={false}
+                    infinite
+                    speed={400}
+                    slidesToShow={1}
+                    slidesToScroll={1}
+                    autoplay
+                    autoplaySpeed={3000}
+                    cssEase="linear"
+                    pauseOnHover
                   >
-                    <FaHeart />
-                  </H.FavoriteButton>
-                </H.ImageWrapper>
-                <H.Info>
-                  <H.Location>{room.title}</H.Location>
-                  <H.Distance>
-                    {room.address} {room.address_dtl}
-                  </H.Distance>
-                  <H.Price>₩{Number(room.price)?.toLocaleString()}</H.Price>
-                  <H.Rating>⭐ {0}</H.Rating>
-                </H.Info>
-              </H.Card>
-            ))
-          ) : (
-            <p>No rooms found.</p>
-          )
+                    {room.images.map((image, index) => (
+                      <H.Image
+                        key={index}
+                        src={import.meta.env.VITE_BACKEND_URL + image.file_url}
+                        alt={`숙소 이미지 ${index + 1}`}
+                      />
+                    ))}
+                  </Slider>
+                ) : (
+                  <H.Placeholder>이미지를 업로드하세요</H.Placeholder>
+                )}
+
+                <H.FavoriteButton
+                  aria-label="찜하기"
+                  $liked={room.liked!}
+                  onClick={(e) => handleFavorite(e, room.id)}
+                >
+                  <FaHeart />
+                </H.FavoriteButton>
+              </H.ImageWrapper>
+              <H.Info>
+                <H.Location>{room.title}</H.Location>
+                <H.Distance>
+                  {room.address} {room.address_dtl}
+                </H.Distance>
+                <H.Price>₩{Number(room.price)?.toLocaleString()}</H.Price>
+                <H.Rating>⭐ {0}</H.Rating>
+              </H.Info>
+            </H.Card>
+          ))
+        ) : (
+          <p>No rooms found.</p>
         )}
       </H.Grid>
     </H.Container>

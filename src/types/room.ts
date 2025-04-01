@@ -25,8 +25,8 @@ export interface IReviewForm {
   rating: number;
   comment: string;
 }
-export interface IRoom extends IFile {
-  id?: string;
+export interface IRoom {
+  id: string;
   title: string;
   content: string;
   address?: string;
@@ -64,4 +64,21 @@ export interface IBookingForm {
   checkout_dt: string;
   guest_count: number;
   total_price: number;
+}
+
+export interface IBooking {
+  id: string;
+  room_id: string;
+  reg_id: string;
+  reg_email: string;
+  reg_name: string;
+  checkin_dt: string;
+  checkout_dt: string;
+  guest_count: number;
+  total_price: number;
+  status: string;
+  status_name: string;
+  room_snapshot: IRoom;
+  created_at: string;
+  updated_at: string;
 }

@@ -42,3 +42,15 @@ export const insertBooking = async (data: IBookingForm) => {
   const response = await apiClient.post('/bnb/booking', data);
   return response.data;
 };
+
+// 예약 조회
+export const fetchBookingDetail = async (bookingId: string) => {
+  const response = await apiClient.get(`/bnb/booking/detail?booking_id=${bookingId}`);
+  return response.data;
+};
+
+// 예약 취소
+// export const cancelBooking = async (id: string) => {
+//   const response = await apiClient.patch(`/bnb/booking/cancel?id=${id}`);
+//   return response.data;
+// };

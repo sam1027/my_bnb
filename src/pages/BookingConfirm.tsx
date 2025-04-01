@@ -1,5 +1,8 @@
 'use client';
-
+import { useParams, useNavigate } from 'react-router-dom';
+import { differenceInDays, format } from 'date-fns';
+import { ko } from 'date-fns/locale';
+import { useQuery } from '@tanstack/react-query';
 import {
   CalendarCheck,
   Users,
@@ -17,59 +20,72 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import Spinner from '@/components/Spinner';
+import Error500 from '@/components/error/Error500';
+import { fetchBookingDetail, fetchRoomDetail } from 'src/api/roomApi';
+import type { IBooking, IRoom } from 'src/types/room';
+import { rq_datailPageCallOption } from 'src/utils/reactQueryOption';
 
-export default function BookingConfirmationPreview() {
-  // 더미 데이터
-  const booking = {
-    id: 'BK12345',
-    status: 'confirmed',
-    checkin_dt: '2025-04-15',
-    checkout_dt: '2025-04-18',
-    guest_count: 2,
-    total_price: 450000,
-    guest_email: 'guest@example.com',
-    room_id: 'RM789',
-  };
+const BookingConfirm = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  // 예약 정보 조회
+  const { data, isLoading, error, refetch } = useQuery<IBooking>({
+    queryKey: ['fetchBookingDetail', id],
+    queryFn: () => {
+      if (!id) throw new Error('Booking ID is required');
+      return fetchBookingDetail(id);
+    },
+    enabled: !!id,
+    ...rq_datailPageCallOption,
+  });
+
+  if (isLoading) return <Spinner />;
+  if (error || !data)
+    return (
+      <Error500
+        onRetry={() => {
+          refetch();
+        }}
+      />
+    );
 
   // 숙박 일수 계산
-  const nights = 3; // 더미 데이터에서는 3박으로 고정
+  const nights = differenceInDays(new Date(data.checkout_dt), new Date(data.checkin_dt));
 
-  const room = {
-    id: 'RM789',
-    title: '아름다운 해변가 펜션',
-    address: '부산광역시 해운대구 해변로 123',
-    address_dtl: '201호',
-    price: 150000,
-    cleaning_fee: 50000,
-    service_fee: 30000,
-    images: [{ file_url: '/placeholder.svg?height=600&width=800' }],
-    amenities: [
-      { code_name: '무료 와이파이' },
-      { code_name: '에어컨' },
-      { code_name: '주방' },
-      { code_name: '수영장' },
-      { code_name: '주차장' },
-    ],
-  };
+  // 예약 상태에 따른 배지 스타일
+  const statusBadgeStyles = {
+    confirmed: 'bg-green-500',
+    cancelled: 'bg-red-500',
+    checked_in: 'bg-yellow-500',
+    checked_out: 'bg-gray-500',
+    noshow: 'bg-gray-500',
+    default: 'bg-gray-500',
+  } as const;
 
   // 예약 상태에 따른 배지 색상
-  const getStatusBadge = () => {
-    switch (booking.status) {
-      case 'confirmed':
-        return <Badge className="bg-green-500">예약 확정</Badge>;
-      case 'pending':
-        return <Badge className="bg-yellow-500">승인 대기중</Badge>;
-      case 'cancelled':
-        return <Badge className="bg-red-500">취소됨</Badge>;
-      default:
-        return <Badge>처리중</Badge>;
-    }
-  };
+  const getStatusBadge = () => (
+    <Badge
+      className={
+        statusBadgeStyles[data.status as keyof typeof statusBadgeStyles] ||
+        statusBadgeStyles['default']
+      }
+    >
+      {data.status_name || '-'}
+    </Badge>
+  );
+
+  // 숙소 이미지
+  const roomImage =
+    data.room_snapshot.images && data.room_snapshot.images.length > 0
+      ? import.meta.env.VITE_BACKEND_URL + data.room_snapshot.images[0].file_url
+      : '/noImage.svg';
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="flex items-center justify-between mb-8">
-        <Button variant="ghost" className="flex items-center gap-2">
+        <Button variant="ghost" className="flex items-center gap-2" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
           뒤로 가기
         </Button>
@@ -90,15 +106,17 @@ export default function BookingConfirmationPreview() {
         </div>
       </div>
 
-      <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8 flex items-center gap-4">
-        <CheckCircle className="h-8 w-8 text-green-500 flex-shrink-0" />
-        <div>
-          <h2 className="text-xl font-semibold text-green-800">예약이 완료되었습니다!</h2>
-          <p className="text-green-700">
-            예약 확인 이메일이 {booking.guest_email}로 발송되었습니다.
-          </p>
+      {data.status === 'confirmed' && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8 flex items-center gap-4">
+          <CheckCircle className="h-8 w-8 text-green-500 flex-shrink-0" />
+          <div>
+            <h2 className="text-xl font-semibold text-green-800">예약이 완료되었습니다!</h2>
+            <p className="text-green-700">
+              예약 확인 이메일이 {data.reg_email || '등록된 이메일'}로 발송되었습니다.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="grid md:grid-cols-3 gap-8">
         <div className="md:col-span-2 space-y-6">
@@ -115,7 +133,11 @@ export default function BookingConfirmationPreview() {
                   <CalendarCheck className="h-5 w-5 text-gray-500 mt-0.5" />
                   <div>
                     <p className="text-sm text-gray-500 font-medium">체크인</p>
-                    <p className="font-medium">2025년 04월 15일 (화)</p>
+                    <p className="font-medium">
+                      {format(new Date(data.checkin_dt), 'yyyy년 MM월 dd일 (EEE)', {
+                        locale: ko,
+                      })}
+                    </p>
                     <p className="text-sm text-gray-500">오후 3:00 이후</p>
                   </div>
                 </div>
@@ -123,7 +145,11 @@ export default function BookingConfirmationPreview() {
                   <CalendarCheck className="h-5 w-5 text-gray-500 mt-0.5" />
                   <div>
                     <p className="text-sm text-gray-500 font-medium">체크아웃</p>
-                    <p className="font-medium">2025년 04월 18일 (금)</p>
+                    <p className="font-medium">
+                      {format(new Date(data.checkout_dt), 'yyyy년 MM월 dd일 (EEE)', {
+                        locale: ko,
+                      })}
+                    </p>
                     <p className="text-sm text-gray-500">오전 11:00 이전</p>
                   </div>
                 </div>
@@ -135,7 +161,7 @@ export default function BookingConfirmationPreview() {
                 <Users className="h-5 w-5 text-gray-500 mt-0.5" />
                 <div>
                   <p className="text-sm text-gray-500 font-medium">게스트</p>
-                  <p className="font-medium">게스트 {booking.guest_count}명</p>
+                  <p className="font-medium">게스트 {data.guest_count}명</p>
                 </div>
               </div>
 
@@ -145,9 +171,7 @@ export default function BookingConfirmationPreview() {
                 <CreditCard className="h-5 w-5 text-gray-500 mt-0.5" />
                 <div>
                   <p className="text-sm text-gray-500 font-medium">결제 정보</p>
-                  <p className="font-medium">
-                    총 결제 금액: ₩{booking.total_price.toLocaleString()}
-                  </p>
+                  <p className="font-medium">총 결제 금액: ₩{data.total_price.toLocaleString()}</p>
                   <p className="text-sm text-gray-500">결제 완료</p>
                 </div>
               </div>
@@ -158,7 +182,7 @@ export default function BookingConfirmationPreview() {
                 <Home className="h-5 w-5 text-gray-500 mt-0.5" />
                 <div>
                   <p className="text-sm text-gray-500 font-medium">예약 번호</p>
-                  <p className="font-medium">{booking.id}</p>
+                  <p className="font-medium">{data.id}</p>
                 </div>
               </div>
             </CardContent>
@@ -172,28 +196,30 @@ export default function BookingConfirmationPreview() {
               <div className="flex gap-4">
                 <div className="w-24 h-24 rounded-md overflow-hidden flex-shrink-0">
                   <img
-                    src="/placeholder.svg?height=200&width=200"
-                    alt={room.title}
+                    src={roomImage || '/placeholder.svg'}
+                    alt={data.room_snapshot.title}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg">{room.title}</h3>
+                  <h3 className="font-semibold text-lg">{data.room_snapshot.title}</h3>
                   <div className="flex items-center text-gray-600 mt-1">
                     <MapPin className="h-4 w-4 mr-1" />
                     <span className="text-sm">
-                      {room.address} {room.address_dtl}
+                      {data.room_snapshot.address}{' '}
+                      {data.room_snapshot.address_dtl ? data.room_snapshot.address_dtl : ''}
                     </span>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-1">
-                    {room.amenities.slice(0, 3).map((amenity, index) => (
-                      <Badge key={index} variant="outline" className="bg-gray-100">
-                        {amenity.code_name}
-                      </Badge>
-                    ))}
-                    {room.amenities.length > 3 && (
+                    {data.room_snapshot.amenities &&
+                      data.room_snapshot.amenities.slice(0, 3).map((amenity, index) => (
+                        <Badge key={index} variant="outline" className="bg-gray-100">
+                          {amenity.code_name}
+                        </Badge>
+                      ))}
+                    {data.room_snapshot.amenities && data.room_snapshot.amenities.length > 3 && (
                       <Badge variant="outline" className="bg-gray-100">
-                        +{room.amenities.length - 3}
+                        +{data.room_snapshot.amenities.length - 3}
                       </Badge>
                     )}
                   </div>
@@ -201,7 +227,11 @@ export default function BookingConfirmationPreview() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button variant="outline" className="w-full">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => navigate(`/room/${data.room_snapshot.id}`)}
+              >
                 숙소 상세 보기
               </Button>
             </CardFooter>
@@ -214,36 +244,43 @@ export default function BookingConfirmationPreview() {
               <CardTitle>요금 세부 정보</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="text-gray-700">숙박비</div>
-                <div className="flex flex-col items-end">
-                  <div className="font-medium">₩{(room.price * nights).toLocaleString()}</div>
-                  <div className="text-sm text-gray-500">
-                    ₩{room.price.toLocaleString()} x {nights}박
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="text-gray-700">청소비</div>
-                <div className="font-medium">₩{room.cleaning_fee.toLocaleString()}</div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="text-gray-700">서비스 수수료</div>
-                <div className="font-medium">₩{room.service_fee.toLocaleString()}</div>
-              </div>
-              <Separator className="my-2" />
-              <div className="flex items-center justify-between pt-2">
-                <div className="text-lg font-bold">총 합계</div>
-                <div className="text-lg font-bold">₩{booking.total_price.toLocaleString()}</div>
-              </div>
+              {(() => {
+                const roomPrice = Number(data.room_snapshot.price) * nights;
+
+                return (
+                  <>
+                    <div className="flex justify-between">
+                      <span>
+                        ₩{Number(data.room_snapshot.price).toLocaleString()} x {nights}박
+                      </span>
+                      <span>₩{roomPrice.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>청소비</span>
+                      <span>₩{Number(data.room_snapshot.cleaning_fee).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>서비스 수수료</span>
+                      <span>₩{Number(data.room_snapshot.service_fee).toLocaleString()}</span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between font-bold">
+                      <span>총 합계</span>
+                      <span>₩{data.total_price.toLocaleString()}</span>
+                    </div>
+                  </>
+                );
+              })()}
             </CardContent>
             <CardFooter className="flex flex-col gap-3">
-              <Button className="w-full" variant="outline">
+              <Button className="w-full" variant="outline" onClick={() => window.print()}>
                 영수증 인쇄
               </Button>
-              <Button className="w-full" variant="destructive">
-                예약 취소 요청
-              </Button>
+              {data.status === 'confirmed' && (
+                <Button className="w-full" variant="destructive">
+                  예약 취소 요청
+                </Button>
+              )}
             </CardFooter>
           </Card>
         </div>
@@ -272,4 +309,6 @@ export default function BookingConfirmationPreview() {
       </div>
     </div>
   );
-}
+};
+
+export default BookingConfirm;

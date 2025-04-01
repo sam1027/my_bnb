@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import type { IBookingForm, IReview, IReviewForm, IRoom } from 'src/types/room';
 import { fetchReviews, fetchRoomDetail, insertBooking, insertReview } from 'src/api/roomApi';
@@ -26,6 +26,7 @@ import KakaoMapViewer from '@/components/KakaoMapViewer';
 
 const RoomDetailContainer = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const {
     data: room,
     isLoading,
@@ -163,10 +164,11 @@ const RoomDetailContainer = () => {
 
     console.log('Booking Data:', bookingData);
 
-    const response = await insertBooking(bookingData);
+    const bookingId = await insertBooking(bookingData);
 
-    if (response) {
+    if (bookingId) {
       alert('예약이 완료되었습니다.');
+      navigate(`/booking/${bookingId}`); // 예약 상세페이지로 이동
     }
   };
 

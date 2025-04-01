@@ -22,6 +22,7 @@ import {
   Users,
   Sparkles,
   BrushIcon as Broom,
+  NonBinary,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -453,7 +454,7 @@ const WriteContainer = () => {
                 {errors.address_dtl && <p className="text-sm text-destructive">{errors.address_dtl.message}</p>}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 hidden">
                 <div className="space-y-2">
                   <Label htmlFor="lat">위도</Label>
                   <Input

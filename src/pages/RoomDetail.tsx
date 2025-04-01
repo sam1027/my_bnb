@@ -22,6 +22,7 @@ import { fetchReviews, fetchRoomDetail, insertReview } from 'src/api/roomApi';
 import { rq_datailPageCallOption } from 'src/utils/reactQueryOption';
 import Spinner from '@/components/Spinner';
 import Error500 from '@/components/error/Error500';
+import KakaoMapViewer from '@/components/KakaoMapViewer';
 
 const RoomDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -242,20 +243,11 @@ const RoomDetail = () => {
         <div className="md:col-span-2">
           {/* Accommodation Details */}
           <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">숙소 정보</h2>
-            <p className="text-gray-700 mb-6">{room.content}</p>
-
-            {room.address && (
-              <div className="flex items-center text-gray-600 mb-6">
-                <MapPin className="mr-2 h-5 w-5" />
-                <span>
-                  {room.address} {room.address_dtl ? room.address_dtl : ''}
-                </span>
-              </div>
-            )}
+            <h2 className="text-2xl font-semibold mb-4">소개</h2>
+            <p className="text-gray-700 mb-10">{room.content}</p>
 
             <h3 className="text-xl font-semibold mb-3">편의 시설</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-10">
               {room.amenities && room.amenities.map((amenity, index) => (
                 <div key={index} className="flex items-center">
                   <div className="h-2 w-2 rounded-full bg-primary mr-2"></div>
@@ -263,6 +255,20 @@ const RoomDetail = () => {
                 </div>
               ))}
             </div>
+
+            <h3 className="text-xl font-semibold mb-3">위치</h3>
+            {room.address && (
+              <>
+              <div className="flex items-center text-gray-600 mb-6">
+                <MapPin className="mr-2 h-5 w-5" />
+                <span>
+                  {room.address} {room.address_dtl ? room.address_dtl : ''}
+                  </span>
+                </div>
+
+                <KakaoMapViewer lat={room.lat} lon={room.lon}/>
+              </>
+            )}
           </div>
 
           <Separator className="my-8" />

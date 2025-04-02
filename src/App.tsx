@@ -1,4 +1,5 @@
 import { ThemeProvider } from 'styled-components';
+import { BrowserRouter } from 'react-router-dom';
 import { lightTheme } from './styles/theme';
 import { GlobalStyle } from './styles/GlobalStyle';
 import Router from './routes/Router';
@@ -7,11 +8,13 @@ import { ConfirmProvider } from './contexts/ConfirmContext';
 function App() {
   return (
     <ThemeProvider theme={lightTheme}>
-      <ConfirmProvider>
-        <GlobalStyle />
-        <Router />
-        <Toaster />
-      </ConfirmProvider>
+      <BrowserRouter basename="/my-bnb">
+        <ConfirmProvider>
+          <GlobalStyle />
+          <Router />
+          <Toaster />
+        </ConfirmProvider>
+      </BrowserRouter>
     </ThemeProvider>
   );
 }

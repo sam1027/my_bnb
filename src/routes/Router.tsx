@@ -10,19 +10,19 @@ import BookingConfirm from 'src/pages/BookingConfirm';
 
 const Router = () => {
   return (
-    <BrowserRouter basename="/my-bnb">
-      <Routes>
-        <Route path="/" element={<PrivateRoute />}>
-          <Route index element={<Home />} />
-          <Route path="/room/:id" element={<RoomDetail />} />
-          <Route path="/booking/:id" element={<BookingConfirm />} />
-          <Route path="/write" element={<Write />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/*" element={<NotFound />} />
-          <Route path="/test" element={<Test />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    // <BrowserRouter basename="/my-bnb">
+    <Routes>
+      <Route path="/" element={<PrivateRoute />}>
+        <Route index element={<Home />} />
+        <Route path="/room/:id" element={<RoomDetail />} />
+        <Route path="/booking/:id" element={<BookingConfirm />} />
+        <Route path="/write" element={<Write />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/*" element={<NotFound />} />
+        <Route path="/test" element={<Test />} />
+      </Route>
+    </Routes>
+    // </BrowserRouter>
   );
 };
 

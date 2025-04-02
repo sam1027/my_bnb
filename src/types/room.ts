@@ -41,6 +41,8 @@ export interface IRoom {
   cleaning_fee?: number;
   max_guests?: number;
   amenities?: ICode[];
+  avg_rating?: number;
+  review_count?: number;
 }
 
 export interface IRoomForm {

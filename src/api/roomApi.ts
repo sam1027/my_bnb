@@ -8,8 +8,8 @@ export const insertRoom = async (data: FormData) => {
 };
 
 // 숙박업소 조회
-export const fetchRooms = async () => {
-  const response = await apiClient.get('/bnb');
+export const fetchRooms = async (page: number, limit: number, searchQuery: string) => {
+  const response = await apiClient.get(`/bnb?page=${page}&limit=${limit}&search=${searchQuery}`);
   return response.data;
 };
 

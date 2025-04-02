@@ -22,8 +22,8 @@ const BasicLayout = ({ children }: LayoutProps) => {
             >
               New Room
             </L.Button>
-            <L.Button onClick={() => {}}>로그아웃</L.Button>
-            <L.Button onClick={() => {}}>로그인</L.Button>
+            {/* <L.Button onClick={() => {}}>로그아웃</L.Button>
+            <L.Button onClick={() => {}}>로그인</L.Button> */}
           </L.NavLinks>
         </L.Nav>
       </L.Header>

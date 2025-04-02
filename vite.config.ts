@@ -11,4 +11,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'), // ✅ 꼭 있어야 `@` 경로 인식돼
     },
   },
+  base: '/my-bnb/', // ❗️ 이게 꼭 있어야 함
+  build: {
+    outDir: 'dist',
+  },
 });

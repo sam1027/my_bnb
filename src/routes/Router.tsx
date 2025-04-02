@@ -10,7 +10,7 @@ import BookingConfirm from 'src/pages/BookingConfirm';
 
 const Router = () => {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/my-bnb">
       <Routes>
         <Route path="/" element={<PrivateRoute />}>
           <Route index element={<Home />} />

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import KakaoMapViewer from './KakaoMapViewer';
-
+import { useAlert } from './ui/ui-alerts';
 interface IProps {
   handleMapInfo: (address: string, lat: number, lon: number) => void;
 }
@@ -9,11 +9,12 @@ const KakaoMapWithSearch = (props: IProps) => {
   const [map, setMap] = useState<any>(null);
   const [marker, setMarker] = useState<any>(null);
   const [address, setAddress] = useState('');
+  const alert = useAlert();
 
   // 주소 검색
   const handleSearch = () => {
     if (!window.kakao?.maps?.services || !map) {
-      alert('카카오 지도 준비 중입니다.');
+      alert.info('카카오 지도 준비 중입니다.');
       return;
     }
 
@@ -32,12 +33,12 @@ const KakaoMapWithSearch = (props: IProps) => {
           // 부모 컴포넌트로 주소와 좌표 전달
           props.handleMapInfo(address, coords.getLat(), coords.getLng());
         } else {
-          alert('정확한 주소를 입력해주세요.');
+          alert.info('정확한 주소를 입력해주세요.');
         }
       });
     } catch (error) {
       console.error('주소 검색 실패:', error);
-      alert('주소 검색 중 오류가 발생했습니다.');
+      alert.error('주소 검색 중 오류가 발생했습니다.');
     }
   };
 

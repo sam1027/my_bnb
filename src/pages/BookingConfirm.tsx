@@ -22,13 +22,17 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import Spinner from '@/components/Spinner';
 import Error500 from '@/components/error/Error500';
-import { fetchBookingDetail, fetchRoomDetail } from 'src/api/roomApi';
+import { fetchBookingDetail, fetchRoomDetail, updateBookingStatus } from 'src/api/roomApi';
 import type { IBooking, IRoom } from 'src/types/room';
 import { rq_datailPageCallOption } from 'src/utils/reactQueryOption';
+import { useConfirm } from 'src/contexts/ConfirmContext';
+import { useAlert } from '@/components/ui/ui-alerts';
 
 const BookingConfirm = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { confirm } = useConfirm();
+  const alert = useAlert();
 
   // 예약 정보 조회
   const { data, isLoading, error, refetch } = useQuery<IBooking>({
@@ -81,6 +85,22 @@ const BookingConfirm = () => {
     data.room_snapshot.images && data.room_snapshot.images.length > 0
       ? import.meta.env.VITE_BACKEND_URL + data.room_snapshot.images[0].file_url
       : '/noImage.svg';
+
+  const handleCancelBooking = async () => {
+    confirm({
+      title: '예약 취소',
+      description: '정말로 예약을 취소하시겠습니까?',
+      confirmText: '확인',
+      cancelText: '취소',
+      onConfirm: async () => {
+        await updateBookingStatus(data.id, 'cancelled');
+        alert.success('예약이 취소되었습니다.');
+        refetch();
+      },
+    });
+    // await updateBookingStatus(data.id, 'cancelled');
+    // refetch();
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -244,41 +264,42 @@ const BookingConfirm = () => {
               <CardTitle>요금 세부 정보</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {(() => {
-                const roomPrice = Number(data.room_snapshot.price) * nights;
-
-                return (
-                  <>
-                    <div className="flex justify-between">
-                      <span>
-                        ₩{Number(data.room_snapshot.price).toLocaleString()} x {nights}박
-                      </span>
-                      <span>₩{roomPrice.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>청소비</span>
-                      <span>₩{Number(data.room_snapshot.cleaning_fee).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>서비스 수수료</span>
-                      <span>₩{Number(data.room_snapshot.service_fee).toLocaleString()}</span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between font-bold">
-                      <span>총 합계</span>
-                      <span>₩{data.total_price.toLocaleString()}</span>
-                    </div>
-                  </>
-                );
-              })()}
+              <div className="flex items-center justify-between">
+                <div className="text-gray-700">숙박비</div>
+                <div className="flex flex-col items-end">
+                  <div className="font-medium">
+                    ₩{(Number(data.room_snapshot.price) * nights).toLocaleString()}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    ₩{Number(data.room_snapshot.price).toLocaleString()} x {nights}박
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="text-gray-700">청소비</div>
+                <div className="font-medium">
+                  ₩{Number(data.room_snapshot.cleaning_fee).toLocaleString()}
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="text-gray-700">서비스 수수료</div>
+                <div className="font-medium">
+                  ₩{Number(data.room_snapshot.service_fee).toLocaleString()}
+                </div>
+              </div>
+              <Separator className="my-2" />
+              <div className="flex items-center justify-between pt-2">
+                <div className="text-lg font-bold">총 합계</div>
+                <div className="text-lg font-bold">₩{data.total_price.toLocaleString()}</div>
+              </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-3">
               <Button className="w-full" variant="outline" onClick={() => window.print()}>
                 영수증 인쇄
               </Button>
               {data.status === 'confirmed' && (
-                <Button className="w-full" variant="destructive">
-                  예약 취소 요청
+                <Button className="w-full" variant="destructive" onClick={handleCancelBooking}>
+                  예약 취소
                 </Button>
               )}
             </CardFooter>

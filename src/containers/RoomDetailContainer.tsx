@@ -23,10 +23,12 @@ import { rq_datailPageCallOption } from 'src/utils/reactQueryOption';
 import Spinner from '@/components/Spinner';
 import Error500 from '@/components/error/Error500';
 import KakaoMapViewer from '@/components/KakaoMapViewer';
-
+import { useAlert } from '@/components/ui/ui-alerts';
 const RoomDetailContainer = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const alert = useAlert();
+
   const {
     data: room,
     isLoading,
@@ -127,7 +129,7 @@ const RoomDetailContainer = () => {
     const response = await insertReview(reviewData);
 
     if (response) {
-      alert('후기가 등록되었습니다.');
+      alert.success('후기가 등록되었습니다.');
       setNewReview('');
       setNewRating(0);
       refetchReviews();
@@ -167,7 +169,7 @@ const RoomDetailContainer = () => {
     const bookingId = await insertBooking(bookingData);
 
     if (bookingId) {
-      alert('예약이 완료되었습니다.');
+      alert.success('예약이 완료되었습니다.');
       navigate(`/booking/${bookingId}`); // 예약 상세페이지로 이동
     }
   };

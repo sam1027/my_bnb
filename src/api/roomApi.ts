@@ -49,8 +49,11 @@ export const fetchBookingDetail = async (bookingId: string) => {
   return response.data;
 };
 
-// 예약 취소
-// export const cancelBooking = async (id: string) => {
-//   const response = await apiClient.patch(`/bnb/booking/cancel?id=${id}`);
-//   return response.data;
-// };
+// 예약 상태 변경
+export const updateBookingStatus = async (bookingId: string, status: string) => {
+  const response = await apiClient.patch(`/bnb/booking/status`, {
+    booking_id: bookingId,
+    status,
+  });
+  return response.data;
+};

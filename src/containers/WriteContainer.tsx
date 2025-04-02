@@ -36,6 +36,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import { useCodeStore } from 'src/store/zustand/useCodeStore';
 import { CodeGroupIds } from 'src/types/code';
+import { useAlert } from '@/components/ui/ui-alerts';
 
 // 각 단계별 스키마 정의
 const step1Schema = yup.object().shape({
@@ -98,6 +99,7 @@ const MAX_IMAGE_COUNT = 10;
 
 const WriteContainer = () => {
   const navigate = useNavigate();
+  const alert = useAlert();
 
   const {
     register,
@@ -166,7 +168,7 @@ const WriteContainer = () => {
     const fileArray = Array.from(files);
 
     if (fileArray.length > MAX_IMAGE_COUNT) {
-      alert(`이미지는 최대 ${MAX_IMAGE_COUNT}장까지 업로드 가능합니다.`);
+      alert.info(`이미지는 최대 ${MAX_IMAGE_COUNT}장까지 업로드 가능합니다.`);
       e.target.value = '';
       return;
     }
@@ -181,7 +183,7 @@ const WriteContainer = () => {
     });
 
     if (exceedFiles.length > 0)
-      alert(`${exceedFiles.join(', ')} 파일은 3MB를 초과하여 제외됩니다.`);
+      alert.info(`${exceedFiles.join(', ')} 파일은 3MB를 초과하여 제외됩니다.`);
 
     if (fileArray.length !== validFiles.length) {
       e.target.value = '';
@@ -211,7 +213,7 @@ const WriteContainer = () => {
       'amenities',
       selectedAmenities.includes(amenityId)
         ? selectedAmenities.filter((id) => id !== amenityId)
-        : [...selectedAmenities, amenityId],
+        : [...selectedAmenities, amenityId]
     );
   };
 
@@ -249,7 +251,7 @@ const WriteContainer = () => {
 
     const roomId = await insertRoom(formData);
     if (roomId) {
-      alert('등록되었습니다.');
+      alert.success('등록되었습니다.');
       navigate(`/`);
     }
   };

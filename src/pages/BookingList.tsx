@@ -155,7 +155,7 @@ const BookingList = () => {
                 >
                   <div className="flex flex-col md:flex-row">
                     {/* 숙소 이미지 */}
-                    <div className="md:w-1/3 h-48 md:h-64 lg:h-80 relative overflow-hidden">
+                    <div className="md:w-1/3 h-48 md:h-auto relative overflow-hidden flex-shrink-0 aspect-[4/3]">
                       {bk?.room_snapshot?.images && bk.room_snapshot.images.length > 0 ? (
                         <img
                           src={
@@ -233,26 +233,31 @@ const BookingList = () => {
                       </div>
 
                       <div className="mt-auto">
-                        <div className="flex justify-between items-center">
-                          <div>
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                          <div className="mb-4 md:mb-0">
                             <span className="font-semibold text-lg">
                               ₩{bk?.total_price?.toLocaleString()}
                             </span>
                             <span className="text-gray-500 text-sm"> 총 금액</span>
                           </div>
 
-                          <div className="flex gap-2">
+                          <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
                             {bk?.status === 'confirmed' && (
                               <>
                                 <Button
                                   variant="outline"
                                   size="sm"
+                                  className="justify-center"
                                   onClick={() => alert.info('준비중입니다.')}
                                 >
                                   <MessageCircle className="h-4 w-4 mr-1" />
                                   호스트에게 연락
                                 </Button>
-                                <Button size="sm" onClick={() => navigate(`/booking/${bk.id}`)}>
+                                <Button
+                                  size="sm"
+                                  className="justify-center"
+                                  onClick={() => navigate(`/booking/${bk.id}`)}
+                                >
                                   <ChevronRight className="h-4 w-4 ml-1" />
                                   예약 상세보기
                                 </Button>
@@ -267,12 +272,17 @@ const BookingList = () => {
                                 <Button
                                   variant="outline"
                                   size="sm"
+                                  className="justify-center"
                                   onClick={() => handleShareEvent(bk.id, bk?.room_snapshot?.title)}
                                 >
                                   <Share className="h-4 w-4 mr-1" />
                                   공유
                                 </Button>
-                                <Button size="sm" onClick={() => navigate(`/room/${bk.room_id}`)}>
+                                <Button
+                                  size="sm"
+                                  className="justify-center"
+                                  onClick={() => navigate(`/room/${bk.room_id}`)}
+                                >
                                   다시 예약
                                 </Button>
                               </>

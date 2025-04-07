@@ -7,6 +7,7 @@ import Write from '../pages/Write';
 import RoomDetail from '../pages/RoomDetail';
 import Test from 'src/pages/Test';
 import BookingConfirm from 'src/pages/BookingConfirm';
+import BookingList from '@/pages/BookingList';
 
 const Router = () => {
   return (
@@ -18,6 +19,8 @@ const Router = () => {
         <Route path="/booking/:id" element={<BookingConfirm />} />
         <Route path="/write" element={<Write />} />
         <Route path="/about" element={<About />} />
+        <Route path="/setting/bookinglist" element={<BookingList />} />
+        {/* <Route path="/setting/mypage" element={<Test />} /> */}
         <Route path="/*" element={<NotFound />} />
         <Route path="/test" element={<Test />} />
       </Route>

@@ -22,7 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import Spinner from '@/components/Spinner';
 import Error500 from '@/components/error/Error500';
 import { fetchBookingDetail, fetchRoomDetail, updateBookingStatus } from 'src/api/roomApi';
-import type { IBooking, IRoom } from 'src/types/room';
+import { IBooking, IRoom, statusBadgeStyles } from 'src/types/room';
 import { rq_datailPageCallOption } from 'src/utils/reactQueryOption';
 import { useConfirm } from 'src/contexts/ConfirmContext';
 import { useAlert } from '@/components/ui/ui-alerts';
@@ -56,16 +56,6 @@ const BookingConfirmContainer = () => {
 
   // 숙박 일수 계산
   const nights = differenceInDays(new Date(data.checkout_dt), new Date(data.checkin_dt));
-
-  // 예약 상태에 따른 배지 스타일
-  const statusBadgeStyles = {
-    confirmed: 'bg-green-500',
-    cancelled: 'bg-red-500',
-    checked_in: 'bg-yellow-500',
-    checked_out: 'bg-gray-500',
-    noshow: 'bg-gray-500',
-    default: 'bg-gray-500',
-  } as const;
 
   // 예약 상태에 따른 배지 색상
   const getStatusBadge = () => (

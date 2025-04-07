@@ -33,10 +33,10 @@ const BasicLayout = ({ children }: LayoutProps) => {
             </Button>
 
             <Button variant="outline" onClick={() => {}} className="rounded-md">
-              로그아웃
+              Login
             </Button>
-            <Button variant="ghost" onClick={() => {}} className="rounded-md">
-              로그인
+            <Button variant="outline" onClick={() => {}} className="rounded-md">
+              Join
             </Button>
 
             {/* 설정 드롭다운 */}
@@ -47,9 +47,9 @@ const BasicLayout = ({ children }: LayoutProps) => {
                 </Button>
               }
               items={[
-                { label: '예약 내역', onClick: () => navigate('/settings/bookinglist') },
-                { label: '마이페이지', onClick: () => navigate('/settings/mypage') },
-                { label: '도움말', onClick: () => navigate('/help') },
+                { label: 'Booking List', onClick: () => navigate('/setting/bookinglist') },
+                // { label: 'My Page', onClick: () => navigate('/setting/mypage') },
+                { label: 'Logout', onClick: () => navigate('/logout') },
               ]}
             />
           </nav>

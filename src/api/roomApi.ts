@@ -57,3 +57,17 @@ export const updateBookingStatus = async (bookingId: string, status: string) => 
   });
   return response.data;
 };
+
+// 예약 목록 조회
+export const fetchBookingList = async (
+  page: number,
+  limit: number,
+  searchQuery: string,
+  status: string,
+  sortOrder: string
+) => {
+  const response = await apiClient.get(
+    `/booking?page=${page}&limit=${limit}&search=${searchQuery}&status=${status}&sort=${sortOrder}`
+  );
+  return response.data;
+};

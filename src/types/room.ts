@@ -1,5 +1,17 @@
 import { ICode } from './code';
 
+// 예약 상태 타입
+export type BookingStatus = 'confirmed' | 'cancelled' | 'checked_in' | 'checked_out' | 'noshow';
+
+// 예약 상태에 따른 배지 스타일
+export const statusBadgeStyles = {
+  confirmed: 'bg-green-500 hover:bg-green-600',
+  cancelled: 'bg-red-500 hover:bg-red-600',
+  checked_in: 'bg-yellow-500 hover:bg-yellow-600',
+  checked_out: 'bg-gray-500 hover:bg-gray-600',
+  noshow: 'bg-gray-500 hover:bg-gray-600',
+  default: 'bg-gray-500 hover:bg-gray-600',
+} as const;
 export interface IFile {
   file_id: string;
   room_id: string;
@@ -43,6 +55,9 @@ export interface IRoom {
   amenities?: ICode[];
   avg_rating?: number;
   review_count?: number;
+  reg_id?: string;
+  reg_name?: string;
+  reg_email?: string;
 }
 
 export interface IRoomForm {

@@ -1,6 +1,6 @@
 import axios from 'axios';
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL,
+  baseURL: '/bnb',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -8,6 +8,6 @@ export const apiClient = axios.create({
 });
 
 export const fileClient = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL,
+  baseURL: '/bnb',
   withCredentials: true,
 });

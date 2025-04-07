@@ -1,5 +1,3 @@
-'use client';
-
 import type React from 'react';
 
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -37,6 +35,7 @@ import { Slider } from '@/components/ui/slider';
 import { useCodeStore } from 'src/store/zustand/useCodeStore';
 import { CodeGroupIds } from 'src/types/code';
 import { useAlert } from '@/components/ui/ui-alerts';
+import { useConfirm } from '@/contexts/ConfirmContext';
 
 // 각 단계별 스키마 정의
 const step1Schema = yup.object().shape({
@@ -56,14 +55,16 @@ const step1Schema = yup.object().shape({
       return isNaN(originalValue) || originalValue === '' ? null : value;
     })
     .min(0, '서비스 수수료는 0 이상이어야 합니다')
-    .integer('서비스 수수료는 정수여야 합니다'),
+    .integer('서비스 수수료는 정수여야 합니다')
+    .nullable(),
   cleaning_fee: yup
     .number()
     .transform((value, originalValue) => {
       return isNaN(originalValue) || originalValue === '' ? null : value;
     })
     .min(0, '청소비는 0 이상이어야 합니다')
-    .integer('청소비는 정수여야 합니다'),
+    .integer('청소비는 정수여야 합니다')
+    .nullable(),
   max_guests: yup.number().transform((value, originalValue) => {
     return isNaN(originalValue) || originalValue === '' ? null : value;
   }),
@@ -100,7 +101,7 @@ const MAX_IMAGE_COUNT = 10;
 const WriteContainer = () => {
   const navigate = useNavigate();
   const alert = useAlert();
-
+  const { confirm } = useConfirm();
   const {
     register,
     handleSubmit,
@@ -249,11 +250,19 @@ const WriteContainer = () => {
       });
     }
 
-    const roomId = await insertRoom(formData);
-    if (roomId) {
-      alert.success('등록되었습니다.');
-      navigate(`/`);
-    }
+    confirm({
+      title: '숙소 등록',
+      description: '숙소를 등록하시겠습니까?',
+      confirmText: '확인',
+      cancelText: '취소',
+      onConfirm: async () => {
+        const roomId = await insertRoom(formData);
+        if (roomId) {
+          alert.success('등록되었습니다.');
+          navigate(`/`);
+        }
+      },
+    });
   };
 
   const nextStep = async (e?: React.MouseEvent) => {

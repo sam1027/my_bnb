@@ -1,6 +1,10 @@
-import React from 'react';
-import * as L from '../styles/LayoutStyles';
+'use client';
+
+import type React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Home, Settings } from 'lucide-react';
+import { HoverDropdown } from '../components/HoverDropdown';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,25 +14,50 @@ const BasicLayout = ({ children }: LayoutProps) => {
   const navigate = useNavigate();
 
   return (
-    <L.Container>
-      <L.Header>
-        <L.Nav>
-          <L.Logo to="/">My BNB</L.Logo>
-          <L.NavLinks>
-            <L.Button
-              onClick={() => {
-                navigate('/write');
-              }}
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-40 border-b bg-background">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2">
+            <Link
+              to="/"
+              className="flex items-center gap-2 font-bold text-xl text-primary hover:text-primary/90 transition-colors"
             >
+              <Home className="h-5 w-5" />
+              My BNB
+            </Link>
+          </div>
+
+          <nav className="flex items-center gap-3">
+            <Button variant="default" onClick={() => navigate('/write')} className="rounded-md">
               New Room
-            </L.Button>
-            {/* <L.Button onClick={() => {}}>로그아웃</L.Button>
-            <L.Button onClick={() => {}}>로그인</L.Button> */}
-          </L.NavLinks>
-        </L.Nav>
-      </L.Header>
-      <L.Main>{children}</L.Main>
-    </L.Container>
+            </Button>
+
+            <Button variant="outline" onClick={() => {}} className="rounded-md">
+              로그아웃
+            </Button>
+            <Button variant="ghost" onClick={() => {}} className="rounded-md">
+              로그인
+            </Button>
+
+            {/* 설정 드롭다운 */}
+            <HoverDropdown
+              trigger={
+                <Button variant="ghost" size="icon" className="rounded-md">
+                  <Settings className="h-5 w-5" />
+                </Button>
+              }
+              items={[
+                { label: '예약 내역', onClick: () => navigate('/settings/bookinglist') },
+                { label: '마이페이지', onClick: () => navigate('/settings/mypage') },
+                { label: '도움말', onClick: () => navigate('/help') },
+              ]}
+            />
+          </nav>
+        </div>
+      </header>
+
+      <main className="flex-1 container mx-auto px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+    </div>
   );
 };
 

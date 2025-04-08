@@ -18,7 +18,6 @@ const Router = () => {
         <Route path="/room/:id" element={<RoomDetail />} />
         <Route path="/booking/:id" element={<BookingConfirm />} />
         <Route path="/write" element={<Write />} />
-        <Route path="/about" element={<About />} />
         <Route path="/setting/bookinglist" element={<BookingList />} />
         {/* <Route path="/setting/mypage" element={<Test />} /> */}
         <Route path="/*" element={<NotFound />} />

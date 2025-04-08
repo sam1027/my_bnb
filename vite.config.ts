@@ -4,10 +4,7 @@ import path from 'path';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
-  // .env.[mode] 파일을 읽어온다 (예: .env.local, .env.production)
-  const env = loadEnv(mode, process.cwd());
-
+export default defineConfig(() => {
   return {
     plugins: [react(), tsconfigPaths()],
     resolve: {

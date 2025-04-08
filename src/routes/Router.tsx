@@ -7,6 +7,7 @@ import RoomDetail from '../pages/RoomDetail';
 import Test from 'src/pages/Test';
 import BookingConfirm from 'src/pages/BookingConfirm';
 import BookingList from '@/pages/BookingList';
+import Login from '@/pages/Login';
 
 const Router = () => {
   return (
@@ -17,6 +18,7 @@ const Router = () => {
         <Route path="/room/:id" element={<RoomDetail />} />
         <Route path="/booking/:id" element={<BookingConfirm />} />
         <Route path="/write" element={<Write />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/setting/bookinglist" element={<BookingList />} />
         {/* <Route path="/setting/mypage" element={<Test />} /> */}
         <Route path="/*" element={<NotFound />} />

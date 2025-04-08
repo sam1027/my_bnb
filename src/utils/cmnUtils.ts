@@ -34,3 +34,9 @@ export function getStayDuration(checkIn: string, checkOut: string): string {
 
   return `${diffDays}박`;
 }
+
+// 이메일 유효성 검사
+export const validateEmail = (email: string) => {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+};

@@ -1,6 +1,6 @@
 import type React from 'react';
-import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { validateEmail } from '@/utils/cmnUtils';
@@ -9,49 +9,147 @@ import { useAlert } from '@/components/ui/ui-alerts';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-
+import { checkEmail } from '@/api/accountApi';
+import { useConfirm } from '@/contexts/ConfirmContext';
 interface IForm {
   email: string;
   name: string;
   password: string;
-  role: string;
 }
 
 const schema = yup.object().shape({
   email: yup.string().required('이메일을 입력하세요.'),
+  name: yup.string().required('이름을 입력하세요.'),
+  password: yup.string().required('비밀번호를 입력하세요.'),
 }) as yup.ObjectSchema<IForm>;
 
-export default function SimpleLoginPage() {
+export default function Login() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const alert = useAlert();
-  const totalSteps = 2;
+  const { confirm } = useConfirm();
+  const totalSteps = 3;
+  const [currentStep, setCurrentStep] = useState(1);
   const {
     register,
     handleSubmit,
+    trigger,
     getValues,
+    reset,
     formState: { errors },
   } = useForm<IForm>({
     resolver: yupResolver(schema),
   });
 
+  const emailCheck = async () => {
+    const { email } = getValues();
+    return await checkEmail(email);
+  };
+
   // 계속 버튼 클릭 핸들러
-  const handleContinue = async () => {
+  const nextStep = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+
+    let isValid = false;
+
+    // 현재 단계에 따라 다른 필드 검증
+    switch (currentStep) {
+      case 1:
+        isValid = await trigger(['email']);
+        break;
+      case 2: // 회원가입
+        isValid = await trigger(['email', 'name', 'password']);
+        break;
+      case 3: // 로그인
+        isValid = await trigger(['email', 'password']);
+        break;
+      default:
+        isValid = false;
+    }
+
+    // 유효성 검사
+    if (!isValid) return;
+
+    if (currentStep === 1) {
+      // 이메일 중복 체크
+      const isDuplicated = await emailCheck();
+      if (isDuplicated) {
+        confirm({
+          title: '계정 확인',
+          description: '이미 존재하는 이메일입니다.해당 이메일로 로그인하시겠습니까?',
+          onConfirm: () => {
+            setCurrentStep(3);
+          },
+        });
+        return;
+      }
+
+      // 이메일 중복 체크 통과 시 다음 단계로
+      setCurrentStep(currentStep + 1);
+      window.scrollTo(0, 0);
+    } else if (currentStep === 2) {
+      // 회원가입 처리
+      handleJoin();
+    } else if (currentStep === 3) {
+      // 로그인 처리
+      handleLogin();
+    }
+  };
+
+  // 이전 버튼 클릭 핸들러
+  const prevStep = () => {
+    reset({
+      name: '',
+      password: '',
+    });
+    setCurrentStep(1);
+    window.scrollTo(0, 0);
+  };
+
+  // 계속 버튼 텍스트
+  const getNextButtonText = () => {
+    switch (currentStep) {
+      case 1:
+        return '계속';
+      case 2: // 회원가입
+        return '회원가입';
+      case 3: // 로그인
+        return '로그인';
+      default:
+        return '';
+    }
+  };
+
+  // 회원가입 처리
+  const handleJoin = async () => {
     setIsLoading(true);
 
-    try {
-      // 실제 구현 시 여기에 이메일 확인 로직 추가
-      console.log('이메일 확인:', getValues('email'));
+    const { email, name, password } = getValues();
 
+    try {
       // API 호출 시뮬레이션
       await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // 이메일 확인 후 비밀번호 입력 페이지로 이동
-      // 또는 회원가입 페이지로 이동 (이메일이 존재하지 않는 경우)
-      // navigate(`/password?email=${encodeURIComponent(email)}`);
     } catch (error) {
       console.error('이메일 확인 실패:', error);
       alert.error('이메일 확인 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 로그인 처리
+  const handleLogin = async () => {
+    setIsLoading(true);
+
+    const { email, password } = getValues();
+
+    try {
+      // API 호출 시뮬레이션
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    } catch (error) {
+      console.error('로그인 실패:', error);
     } finally {
       setIsLoading(false);
     }
@@ -72,18 +170,63 @@ export default function SimpleLoginPage() {
             placeholder="이메일"
             {...register('email')}
             className={`h-14 text-base px-4 rounded-lg mb-4 ${errors.email ? 'border-destructive' : ''}`}
+            disabled={currentStep > 1}
           />
           {errors.email && <p className="text-sm text-destructive mb-4">{errors.email.message}</p>}
 
-          {/* 계속 버튼 */}
-          <Button
-            className="w-full h-14 bg-[#E41D57] hover:bg-[#D91A50] text-white font-medium text-base rounded-lg mb-6"
-            onClick={handleContinue}
-            disabled={isLoading}
-          >
-            {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
-            계속
-          </Button>
+          {currentStep === 2 && (
+            <>
+              {/* 이름 입력 필드 */}
+              <Input
+                type="text"
+                placeholder="이름"
+                {...register('name')}
+                className={`h-14 text-base px-4 rounded-lg mb-4 ${errors.name ? 'border-destructive' : ''}`}
+              />
+              {errors.name && (
+                <p className="text-sm text-destructive mb-4">{errors.name.message}</p>
+              )}
+            </>
+          )}
+
+          {(currentStep === 2 || currentStep === 3) && (
+            <>
+              {/* 비밀번호 입력 필드 */}
+              <Input
+                type="password"
+                placeholder="비밀번호"
+                {...register('password')}
+                className={`h-14 text-base px-4 rounded-lg mb-4 ${errors.password ? 'border-destructive' : ''}`}
+              />
+              {errors.password && (
+                <p className="text-sm text-destructive mb-4">{errors.password.message}</p>
+              )}
+            </>
+          )}
+
+          <div className="flex justify-between">
+            {/* 이전 버튼 */}
+            {currentStep > 1 && (
+              <Button
+                className="h-14 bg-[#969596] hover:bg-[#969596] text-white font-medium text-base rounded-lg mb-6"
+                onClick={prevStep}
+                disabled={isLoading}
+              >
+                <ArrowLeft className="h-5 w-5" />
+                이전
+              </Button>
+            )}
+
+            {/* 계속 버튼 */}
+            <Button
+              className={`${currentStep === 1 ? 'w-full' : ''} h-14 bg-[#E41D57] hover:bg-[#D91A50] text-white font-medium text-base rounded-lg mb-6`}
+              onClick={nextStep}
+              disabled={isLoading}
+            >
+              {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
+              {getNextButtonText()}
+            </Button>
+          </div>
         </form>
 
         {/* 구분선 */}

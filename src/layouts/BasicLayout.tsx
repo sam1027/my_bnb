@@ -32,11 +32,14 @@ const BasicLayout = ({ children }: LayoutProps) => {
               New Room
             </Button>
 
-            <Button variant="outline" onClick={() => {}} className="rounded-md">
+            <Button
+              variant="outline"
+              onClick={() => {
+                navigate('/login');
+              }}
+              className="rounded-md"
+            >
               Login
-            </Button>
-            <Button variant="outline" onClick={() => {}} className="rounded-md">
-              Join
             </Button>
 
             {/* 설정 드롭다운 */}

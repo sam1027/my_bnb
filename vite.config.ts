@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
       proxy: {
         '/bnb': {
           target: env.VITE_BACKEND_URL,
-          changeOrigin: true,
+          // changeOrigin: true,
           // rewrite: (path) => path.replace(/^\/bnb/, ''),
         },
       },

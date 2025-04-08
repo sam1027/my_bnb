@@ -248,7 +248,11 @@ const BookingList = () => {
                                   variant="outline"
                                   size="sm"
                                   className="justify-center"
-                                  onClick={() => alert.info('준비중입니다.')}
+                                  onClick={() =>
+                                    bk.room_snapshot.reg_email
+                                      ? (window.location.href = `mailto:${bk.room_snapshot.reg_email}`)
+                                      : alert.info('호스트의 연락처가 존재하지 않습니다.')
+                                  }
                                 >
                                   <MessageCircle className="h-4 w-4 mr-1" />
                                   호스트에게 연락

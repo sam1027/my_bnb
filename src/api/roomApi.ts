@@ -3,13 +3,13 @@ import { apiClient, fileClient } from './apiClient';
 
 // 숙박업소 등록
 export const insertRoom = async (data: FormData) => {
-  const response = await fileClient.post('', data);
+  const response = await fileClient.post('/', data);
   return response.data;
 };
 
 // 숙박업소 조회
 export const fetchRooms = async (page: number, limit: number, searchQuery: string) => {
-  const response = await apiClient.get(`?page=${page}&limit=${limit}&search=${searchQuery}`);
+  const response = await apiClient.get(`/?page=${page}&limit=${limit}&search=${searchQuery}`);
   return response.data;
 };
 

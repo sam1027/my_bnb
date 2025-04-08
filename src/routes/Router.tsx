@@ -1,7 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import NotFound from '../pages/NotFound';
 import Home from '../pages/Home';
-import About from '../pages/About';
 import PrivateRoute from '../components/base/PrivateRoute';
 import Write from '../pages/Write';
 import RoomDetail from '../pages/RoomDetail';

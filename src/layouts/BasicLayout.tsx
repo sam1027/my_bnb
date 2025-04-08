@@ -57,6 +57,40 @@ const BasicLayout = ({ children }: LayoutProps) => {
       </header>
 
       <main className="flex-1 container mx-auto px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+
+      <footer className="w-full border-t bg-background text-muted-foreground text-sm">
+        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center px-4 py-6 space-y-4 md:space-y-0">
+          {/* 왼쪽 정보 */}
+          <div className="text-center md:text-left">
+            ⓒ {new Date().getFullYear()} My BNB. All rights reserved.
+          </div>
+
+          {/* 중간 링크 */}
+          {/* <div className="flex gap-4">
+            <a href="/privacy" className="hover:underline hover:text-foreground transition-colors">
+              Privacy Policy
+            </a>
+            <a href="/terms" className="hover:underline hover:text-foreground transition-colors">
+              Terms of Use
+            </a>
+          </div> */}
+
+          {/* 오른쪽 SNS / 로고 등 */}
+          <div className="flex gap-3">
+            <a
+              href="https://github.com/sam1027"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors"
+            >
+              GitHub
+            </a>
+            <a href="mailto:yse1027@gmail.com" className="hover:text-foreground transition-colors">
+              Contact
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

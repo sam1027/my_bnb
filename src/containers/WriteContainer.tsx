@@ -423,7 +423,7 @@ const WriteContainer = () => {
 
               <div className="space-y-4">
                 <Label>편의시설</Label>
-                <div className="max-h-60 overflow-y-auto border rounded-md p-4">
+                <div className="relative max-h-[300px] overflow-y-auto border rounded-md p-4">
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {amenitiesCodes[codeGroupId] &&
                       amenitiesCodes[codeGroupId].map((amenity) => (

@@ -20,11 +20,11 @@ export default defineConfig(({ mode }) => {
       postcss: './postcss.config.js',
     },
     server: {
-      port: 9000,
+      port: 3000,
       open: false,
       proxy: {
         '/bnb': {
-          target: 'http://116.127.116.8:50441/api/nodetest/',
+          target: env.VITE_BACKEND_URL,
           changeOrigin: true,
           // rewrite: (path) => path.replace(/^\/bnb/, ''),
         },

@@ -15,6 +15,9 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, 'src'), // 꼭 있어야 `@` 경로 인식돼
       },
     },
+    css: {
+      postcss: './postcss.config.js',
+    },
     server: {
       port: 3000,
       open: false,

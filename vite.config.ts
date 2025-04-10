@@ -21,6 +21,16 @@ export default defineConfig(() => {
     },
     build: {
       outDir: 'dist',
+      minify: 'esbuild', // esbuild를 사용해 빠르게 압축
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              return 'vendor'; // node_modules 코드 분리 (코드 스플리팅)
+            }
+          },
+        },
+      },
     },
     base: '/my-bnb',
   };

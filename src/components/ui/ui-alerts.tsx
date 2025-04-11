@@ -1,4 +1,3 @@
-'use client';
 import { useToast } from '@/components/hooks/use-toast';
 
 // Alert 함수 - 토스트 알림을 표시합니다
@@ -10,7 +9,7 @@ export function useAlert() {
       toast({
         title: '성공',
         description: message,
-        variant: 'default',
+        variant: 'success',
       });
     },
     error: (message: string) => {
@@ -23,6 +22,7 @@ export function useAlert() {
     info: (message: string) => {
       toast({
         description: message,
+        variant: 'default',
       });
     },
   };

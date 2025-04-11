@@ -5,7 +5,10 @@ import { GlobalStyle } from './styles/GlobalStyle';
 import Router from './routes/Router';
 import { Toaster } from '@/components/ui/toaster';
 import { ConfirmProvider } from './contexts/ConfirmContext';
+import { useGlobalMessageAlert } from './hooks/useGlobalMessageAlert';
 function App() {
+  useGlobalMessageAlert(); // 한 번만 실행되면 됨
+
   return (
     <ThemeProvider theme={lightTheme}>
       <BrowserRouter basename="/my-bnb">

@@ -9,8 +9,10 @@ import { useAlert } from '@/components/ui/ui-alerts';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { checkEmail } from '@/api/accountApi';
+import { checkEmail, login, signup } from '@/api/authApi';
 import { useConfirm } from '@/contexts/ConfirmContext';
+import { useAuthStore } from 'src/store/zustand/useAuthStore';
+
 interface IForm {
   email: string;
   name: string;
@@ -19,7 +21,11 @@ interface IForm {
 
 const schema = yup.object().shape({
   email: yup.string().required('이메일을 입력하세요.'),
-  name: yup.string().required('이름을 입력하세요.'),
+  name: yup.string().when('$currentStep', {
+    is: (step: number) => step === 2,
+    then: (schema) => schema.required('이름을 입력하세요.'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
   password: yup.string().required('비밀번호를 입력하세요.'),
 }) as yup.ObjectSchema<IForm>;
 
@@ -30,6 +36,7 @@ export default function Login() {
   const { confirm } = useConfirm();
   const totalSteps = 3;
   const [currentStep, setCurrentStep] = useState(1);
+  const loginStore = useAuthStore((state) => state.login);
   const {
     register,
     handleSubmit,
@@ -39,7 +46,15 @@ export default function Login() {
     formState: { errors },
   } = useForm<IForm>({
     resolver: yupResolver(schema),
+    context: { currentStep },
   });
+
+  useEffect(() => {
+    reset({
+      name: '',
+      password: '',
+    });
+  }, [currentStep]);
 
   const emailCheck = async () => {
     const { email } = getValues();
@@ -52,88 +67,63 @@ export default function Login() {
       e.preventDefault();
     }
 
-    let isValid = false;
-
-    // 현재 단계에 따라 다른 필드 검증
-    switch (currentStep) {
-      case 1:
-        isValid = await trigger(['email']);
-        break;
-      case 2: // 회원가입
-        isValid = await trigger(['email', 'name', 'password']);
-        break;
-      case 3: // 로그인
-        isValid = await trigger(['email', 'password']);
-        break;
-      default:
-        isValid = false;
-    }
-
-    // 유효성 검사
+    const isValid = await trigger(['email']);
     if (!isValid) return;
 
-    if (currentStep === 1) {
-      // 이메일 중복 체크
-      const isDuplicated = await emailCheck();
-      if (isDuplicated) {
-        confirm({
-          title: '계정 확인',
-          description: '이미 존재하는 이메일입니다.해당 이메일로 로그인하시겠습니까?',
-          onConfirm: () => {
-            setCurrentStep(3);
-          },
-        });
-        return;
-      }
-
-      // 이메일 중복 체크 통과 시 다음 단계로
-      setCurrentStep(currentStep + 1);
-      window.scrollTo(0, 0);
-    } else if (currentStep === 2) {
-      // 회원가입 처리
-      handleJoin();
-    } else if (currentStep === 3) {
-      // 로그인 처리
-      handleLogin();
+    // 이메일 중복 체크
+    const isDuplicated = await emailCheck();
+    if (isDuplicated) {
+      confirm({
+        title: '계정 확인',
+        description: '이미 존재하는 이메일입니다.해당 이메일로 로그인하시겠습니까?',
+        onConfirm: () => {
+          setCurrentStep(3);
+        },
+      });
+      return;
     }
+
+    // 이메일 중복 체크 통과 시 다음 단계로
+    setCurrentStep(currentStep + 1);
+    window.scrollTo(0, 0);
   };
 
   // 이전 버튼 클릭 핸들러
   const prevStep = () => {
-    reset({
-      name: '',
-      password: '',
-    });
     setCurrentStep(1);
     window.scrollTo(0, 0);
-  };
-
-  // 계속 버튼 텍스트
-  const getNextButtonText = () => {
-    switch (currentStep) {
-      case 1:
-        return '계속';
-      case 2: // 회원가입
-        return '회원가입';
-      case 3: // 로그인
-        return '로그인';
-      default:
-        return '';
-    }
   };
 
   // 회원가입 처리
   const handleJoin = async () => {
     setIsLoading(true);
 
-    const { email, name, password } = getValues();
+    const { name, email, password } = getValues();
+
+    // 이메일 중복 체크
+    const isDuplicated = await emailCheck();
+    if (isDuplicated) {
+      confirm({
+        title: '계정 확인',
+        description: '이미 존재하는 이메일입니다.해당 이메일로 로그인하시겠습니까?',
+        onConfirm: () => {
+          setCurrentStep(3);
+        },
+      });
+      return;
+    }
 
     try {
-      // API 호출 시뮬레이션
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const result = await signup(name, email, password);
+      if (result > 0) {
+        alert.success('회원가입이 완료되었습니다.');
+        setCurrentStep(3);
+      } else {
+        alert.error('회원가입에 실패했습니다.');
+      }
     } catch (error) {
-      console.error('이메일 확인 실패:', error);
-      alert.error('이메일 확인 중 오류가 발생했습니다.');
+      console.error('회원가입 실패:', error);
+      alert.error('회원가입에 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -144,10 +134,17 @@ export default function Login() {
     setIsLoading(true);
 
     const { email, password } = getValues();
+    console.log(email, password);
 
     try {
-      // API 호출 시뮬레이션
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await login(email, password);
+      console.log(`login response: ${response}`);
+      if (response.status === 200) {
+        loginStore(response.data.accessToken);
+        alert.success(response.data.message);
+      } else {
+        alert.error(response.data.message);
+      }
     } catch (error) {
       console.error('로그인 실패:', error);
     } finally {
@@ -163,7 +160,7 @@ export default function Login() {
       <div className="border-t border-gray-200 pt-6">
         {/* 환영 메시지 */}
         <h2 className="text-xl font-medium mb-6">마이비엔비에 오신 것을 환영합니다.</h2>
-        <form onSubmit={handleSubmit((data) => console.log(data))}>
+        <form onSubmit={handleSubmit(currentStep > 2 ? handleLogin : handleJoin)}>
           {/* 이메일 입력 필드 */}
           <Input
             type="email"
@@ -182,6 +179,11 @@ export default function Login() {
                 placeholder="이름"
                 {...register('name')}
                 className={`h-14 text-base px-4 rounded-lg mb-4 ${errors.name ? 'border-destructive' : ''}`}
+                onKeyUp={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSubmit(handleJoin)();
+                  }
+                }}
               />
               {errors.name && (
                 <p className="text-sm text-destructive mb-4">{errors.name.message}</p>
@@ -197,6 +199,11 @@ export default function Login() {
                 placeholder="비밀번호"
                 {...register('password')}
                 className={`h-14 text-base px-4 rounded-lg mb-4 ${errors.password ? 'border-destructive' : ''}`}
+                onKeyUp={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSubmit(currentStep > 2 ? handleLogin : handleJoin)();
+                  }
+                }}
               />
               {errors.password && (
                 <p className="text-sm text-destructive mb-4">{errors.password.message}</p>
@@ -217,15 +224,27 @@ export default function Login() {
               </Button>
             )}
 
-            {/* 계속 버튼 */}
-            <Button
-              className={`${currentStep === 1 ? 'w-full' : ''} h-14 bg-[#E41D57] hover:bg-[#D91A50] text-white font-medium text-base rounded-lg mb-6`}
-              onClick={nextStep}
-              disabled={isLoading}
-            >
-              {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
-              {getNextButtonText()}
-            </Button>
+            {/* 계속 or 로그인 or 회원가입 버튼 */}
+            {currentStep === 1 ? (
+              <Button
+                type="button"
+                className="w-full h-14 bg-[#E41D57] hover:bg-[#D91A50] text-white font-medium text-base rounded-lg mb-6"
+                onClick={nextStep}
+                disabled={isLoading}
+              >
+                {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
+                계속
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                className="h-14 bg-[#E41D57] hover:bg-[#D91A50] text-white font-medium text-base rounded-lg mb-6"
+                disabled={isLoading}
+              >
+                {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
+                {currentStep > 2 ? '로그인' : '회원가입'}
+              </Button>
+            )}
           </div>
         </form>
 

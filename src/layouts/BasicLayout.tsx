@@ -5,13 +5,29 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Home, Settings } from 'lucide-react';
 import { HoverDropdown } from '../components/HoverDropdown';
-
+import { useAuthStore } from 'src/store/zustand/useAuthStore';
+import { useConfirm } from '@/contexts/ConfirmContext';
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const BasicLayout = ({ children }: LayoutProps) => {
   const navigate = useNavigate();
+  const { confirm } = useConfirm();
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const logoutStore = useAuthStore((state) => state.logout);
+  const userInfo = useAuthStore((state) => state.userInfo);
+  console.log(`isLoggedIn: ${isLoggedIn}`);
+
+  const logoutHandler = () => {
+    confirm({
+      title: '로그아웃',
+      description: '로그아웃 하시겠습니까?',
+      onConfirm: () => {
+        logoutStore();
+      },
+    });
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -28,33 +44,42 @@ const BasicLayout = ({ children }: LayoutProps) => {
           </div>
 
           <nav className="flex items-center gap-3">
-            <Button variant="default" onClick={() => navigate('/write')} className="rounded-md">
-              New Room
-            </Button>
+            {/* 숙소등록 버튼 */}
+            {isLoggedIn ? (
+              <Button variant="default" onClick={() => navigate('/write')} className="rounded-md">
+                New Room
+              </Button>
+            ) : null}
 
-            <Button
-              variant="outline"
-              onClick={() => {
-                navigate('/login');
-              }}
-              className="rounded-md"
-            >
-              Login
-            </Button>
+            {/* 로그인/회원가입 버튼 */}
+            {!isLoggedIn ? (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  navigate('/login');
+                }}
+                className="rounded-md"
+              >
+                Login
+              </Button>
+            ) : null}
 
             {/* 설정 드롭다운 */}
-            <HoverDropdown
-              trigger={
-                <Button variant="ghost" size="icon" className="rounded-md">
-                  <Settings className="h-5 w-5" />
-                </Button>
-              }
-              items={[
-                { label: 'Booking List', onClick: () => navigate('/setting/bookinglist') },
-                // { label: 'My Page', onClick: () => navigate('/setting/mypage') },
-                { label: 'Logout', onClick: () => navigate('/logout') },
-              ]}
-            />
+            {isLoggedIn ? (
+              <HoverDropdown
+                trigger={
+                  <Button variant="ghost" size="icon" className="rounded-md">
+                    <Settings className="h-5 w-5" />
+                  </Button>
+                }
+                items={[
+                  { label: `Hello, ${userInfo?.name}`, onClick: () => {} },
+                  { label: 'Booking List', onClick: () => navigate('/setting/bookinglist') },
+                  // { label: 'My Page', onClick: () => navigate('/setting/mypage') },
+                  { label: 'Logout', onClick: logoutHandler },
+                ]}
+              />
+            ) : null}
           </nav>
         </div>
       </header>

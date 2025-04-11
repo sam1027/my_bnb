@@ -19,10 +19,11 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   accessToken: localStorage.getItem('accessToken'),
   isLoggedIn: !!localStorage.getItem('accessToken'),
-  userInfo: null,
+  userInfo: localStorage.getItem('userInfo') ? JSON.parse(localStorage.getItem('userInfo')!) : null,
   login: (accessToken) => {
     const decoded = jwtDecode<IUserInfo>(accessToken);
     localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('userInfo', JSON.stringify(decoded));
     set({ accessToken, isLoggedIn: true, userInfo: decoded });
     pushGlobalMessage({
       type: 'success',

@@ -18,6 +18,7 @@ const BasicLayout = ({ children }: LayoutProps) => {
   const logoutStore = useAuthStore((state) => state.logout);
   const userInfo = useAuthStore((state) => state.userInfo);
   console.log(`isLoggedIn: ${isLoggedIn}`);
+  console.log(`userInfo: ${JSON.stringify(userInfo)}`);
 
   const logoutHandler = () => {
     confirm({

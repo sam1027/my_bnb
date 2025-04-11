@@ -32,9 +32,13 @@ const ImageSlideCard = ({ room, onToggleFavorite, handleCardClick }: ImageSlideC
                 <CarouselItem key={index}>
                   <div className="relative aspect-square">
                     <img
-                      src={import.meta.env.VITE_BACKEND_URL + image.file_url || placeholderImage}
+                      src={import.meta.env.VITE_BACKEND_URL + image.file_url}
                       alt={`${room.title} - Image ${index + 1}`}
                       className="object-cover w-full h-full rounded-t-lg"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null; // placeholderImage도 에러일 경우 무한 루프 방지
+                        e.currentTarget.src = placeholderImage;
+                      }}
                     />
                   </div>
                 </CarouselItem>

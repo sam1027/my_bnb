@@ -161,6 +161,10 @@ const BookingListContainer = () => {
                           }
                           alt={bk.room_snapshot.title}
                           className="w-full h-full object-cover rounded-lg"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null; // placeholderImage도 에러일 경우 무한 루프 방지
+                            e.currentTarget.src = placeholderImage;
+                          }}
                         />
                       ) : (
                         <img

@@ -24,6 +24,8 @@ import Spinner from '@/components/Spinner';
 import Error500 from '@/components/error/Error500';
 import KakaoMapViewer from '@/components/KakaoMapViewer';
 import { useAlert } from '@/components/ui/ui-alerts';
+import placeholderImage from '@/assets/images/property-placeholder.svg';
+
 const RoomDetailContainer = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -175,11 +177,10 @@ const RoomDetailContainer = () => {
   };
 
   // Default image if no images are available
-  const defaultImage = '/noImage.svg?height=600&width=800';
   const currentImage =
     room.images && room.images.length > 0
       ? import.meta.env.VITE_BACKEND_URL + room.images[currentImageIndex].file_url
-      : defaultImage;
+      : placeholderImage;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -189,9 +190,13 @@ const RoomDetailContainer = () => {
       <div className="relative mb-8">
         <div className="relative h-[400px] md:h-[500px] rounded-xl overflow-hidden">
           <img
-            src={currentImage || '/noImage.svg'}
+            src={currentImage}
             alt={`${room.title} 이미지 ${currentImageIndex + 1}`}
             className="object-cover w-full h-full absolute inset-0"
+            onError={(e) => {
+              e.currentTarget.onerror = null; // placeholderImage도 에러일 경우 무한 루프 방지
+              e.currentTarget.src = placeholderImage;
+            }}
           />
           {room.images && room.images.length > 1 && (
             <>
@@ -229,9 +234,13 @@ const RoomDetailContainer = () => {
                 }`}
               >
                 <img
-                  src={import.meta.env.VITE_BACKEND_URL + image.file_url || '/noImage.svg'}
-                  alt={`썸네일 ${index + 1}`}
+                  src={import.meta.env.VITE_BACKEND_URL + image.file_url}
+                  alt={`${room.title} 작은 이미지 ${currentImageIndex + 1}`}
                   className="object-cover h-full w-full"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null; // placeholderImage도 에러일 경우 무한 루프 방지
+                    e.currentTarget.src = placeholderImage;
+                  }}
                 />
               </button>
             ))}
@@ -252,9 +261,13 @@ const RoomDetailContainer = () => {
                   {room.images.map((image, index) => (
                     <div key={index} className="relative aspect-square rounded-md overflow-hidden">
                       <img
-                        src={import.meta.env.VITE_BACKEND_URL + image.file_url || '/noImage.svg'}
-                        alt={`${room.title} 이미지 ${index + 1}`}
+                        src={import.meta.env.VITE_BACKEND_URL + image.file_url}
+                        alt={`${room.title} 모든 사진보기 이미지 ${index + 1}`}
                         className="object-cover w-full h-full"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null; // placeholderImage도 에러일 경우 무한 루프 방지
+                          e.currentTarget.src = placeholderImage;
+                        }}
                       />
                     </div>
                   ))}

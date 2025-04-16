@@ -1,33 +1,33 @@
-import axios from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from 'src/store/zustand/useAuthStore';
 import { pushGlobalMessage } from '@/lib/globalMessage';
 const loginUrl = '/my-bnb/login';
+const baseURL = import.meta.env.VITE_BACKEND_URL + 'bnb';
 
-export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL + 'bnb',
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-apiClient.interceptors.request.use((config) => {
+/**
+ * 요청 인터셉터: 토큰 추가
+ */
+const requestInterceptor = (config: InternalAxiosRequestConfig) => {
   const token = localStorage.getItem('accessToken');
-  if (token) {
+  if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
-});
+};
 
-apiClient.interceptors.response.use(
-  (res) => res,
-  async (err) => {
+/**
+ * 응답 인터셉터: 에러 처리 및 토큰 재발급
+ */
+const responseInterceptor = (instance: AxiosInstance) => {
+  return async (err: AxiosError) => {
     const status = err.response?.status;
-    console.log(`apiClient response status: ${status}`);
+    const message = (err.response?.data as { message?: string })?.message;
+
+    console.log(`${instance.defaults.baseURL} response status: ${status}`);
 
     // 토큰 만료 또는 미로그인 → 로그아웃 처리
     if (status === 401) {
-      console.error(err.response?.data.message);
+      console.error(message);
       pushGlobalMessage({
         type: 'error',
         content: '로그인이 필요한 서비스입니다. 로그인 해주세요.',
@@ -44,16 +44,16 @@ apiClient.interceptors.response.use(
         useAuthStore.getState().login(newToken);
 
         // 실패한 요청 재시도
-        err.config.headers.Authorization = `Bearer ${newToken}`;
-        return apiClient.request(err.config);
-      } catch {
-        console.error(err.response?.data.message);
+        if (err.config && err.config.headers) {
+          err.config.headers.Authorization = `Bearer ${newToken}`;
+          return instance.request(err.config);
+        }
+      } catch (refreshErr: any) {
+        console.error(refreshErr.response?.data.message);
         pushGlobalMessage({
           type: 'error',
-          content: err.response?.data.message,
-          // content: '로그인 세션이 만료되었습니다. 다시 로그인 해주세요.',
+          content: refreshErr.response?.data.message,
         });
-        // useAuthStore.getState().logout();
         window.location.href = '/';
       }
     }
@@ -67,59 +67,29 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(err);
-  }
-);
+  };
+};
 
-export const fileClient = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL + 'bnb',
-  withCredentials: true,
-});
+/**
+ * Axios 인스턴스 생성 함수
+ */
+const createApiClient = (withJsonHeader: boolean = true) => {
+  const instance = axios.create({
+    baseURL,
+    withCredentials: true,
+    headers: withJsonHeader
+      ? {
+          'Content-Type': 'application/json',
+        }
+      : {},
+  });
 
-fileClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+  instance.interceptors.request.use(requestInterceptor);
+  instance.interceptors.response.use((res: AxiosResponse) => res, responseInterceptor(instance));
 
-fileClient.interceptors.response.use(
-  (res) => res,
-  async (err) => {
-    const status = err.response?.status;
-    console.log(`fileClient response status: ${status}`);
+  return instance;
+};
 
-    // 토큰 만료 또는 미로그인 → 로그아웃 처리
-    if (status === 401) {
-      console.error(err.response?.data.message);
-      pushGlobalMessage({
-        type: 'error',
-        content: '로그인이 필요한 서비스입니다. 로그인 해주세요.',
-      });
-      useAuthStore.getState().logout();
-      window.location.href = loginUrl;
-    }
-
-    // 권한 부족 -> 토큰 갱신 후 재시도 -> 실패 시 로그아웃 처리
-    if (status === 403) {
-      try {
-        const refreshRes = await axios.post('/auth/refresh', {}, { withCredentials: true });
-        const newToken = refreshRes.data.accessToken;
-        useAuthStore.getState().login(newToken);
-
-        // 실패한 요청 재시도
-        err.config.headers.Authorization = `Bearer ${newToken}`;
-        return apiClient.request(err.config);
-      } catch {
-        console.error(err.response?.data.message);
-        pushGlobalMessage({
-          type: 'error',
-          content: '로그인 세션이 만료되었습니다. 다시 로그인 해주세요.',
-        });
-        useAuthStore.getState().logout();
-        window.location.href = loginUrl;
-      }
-    }
-    return Promise.reject(err);
-  }
-);
+// ✅ 사용 예시
+export const apiClient = createApiClient(true);
+export const fileClient = createApiClient(false);

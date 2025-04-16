@@ -11,6 +11,7 @@ import placeholderImage from '@/assets/images/property-placeholder.svg';
 import { Heart, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useAuthStore } from 'src/store/zustand/useAuthStore';
 
 interface ImageSlideCardProps {
   room: IRoom;
@@ -21,6 +22,7 @@ interface ImageSlideCardProps {
 const ImageSlideCard = ({ room, onToggleFavorite, handleCardClick }: ImageSlideCardProps) => {
   // Check if property has images
   const hasImages = room.images && room.images.length > 0;
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   return (
     <Card className="overflow-hidden">
@@ -60,20 +62,28 @@ const ImageSlideCard = ({ room, onToggleFavorite, handleCardClick }: ImageSlideC
             />
           </div>
         )}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute top-2 right-2 z-10 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white/90"
-          onClick={(e) => onToggleFavorite(e, room.id)}
-        >
-          <Heart
-            className={cn('h-5 w-5', room.liked ? 'fill-rose-500 text-rose-500' : 'text-slate-600')}
-          />
-          <span className="sr-only">
-            {room.liked ? 'Remove from favorites' : 'Add to favorites'}
-          </span>
-        </Button>
+
+        {/* 찜버튼 */}
+        {isLoggedIn ? (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 right-2 z-10 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white/90"
+            onClick={(e) => onToggleFavorite(e, room.id)}
+          >
+            <Heart
+              className={cn(
+                'h-5 w-5',
+                room.liked ? 'fill-rose-500 text-rose-500' : 'text-slate-600'
+              )}
+            />
+            <span className="sr-only">
+              {room.liked ? 'Remove from favorites' : 'Add to favorites'}
+            </span>
+          </Button>
+        ) : null}
       </div>
+
       <CardContent className="p-4">
         <div className="flex justify-between items-start">
           <h3

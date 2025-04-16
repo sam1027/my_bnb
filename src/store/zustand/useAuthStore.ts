@@ -34,10 +34,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => {
     localStorage.removeItem('accessToken');
     set({ accessToken: null, isLoggedIn: false });
-    pushGlobalMessage({
-      type: 'success',
-      content: '로그아웃 되었습니다.',
-    });
+    // pushGlobalMessage({
+    //   type: 'success',
+    //   content: '로그아웃 되었습니다.',
+    // });
     window.location.href = '/';
   },
 }));

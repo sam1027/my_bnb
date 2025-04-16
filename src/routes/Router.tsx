@@ -8,6 +8,7 @@ import Test from 'src/pages/Test';
 import BookingConfirm from 'src/pages/BookingConfirm';
 import BookingList from '@/pages/BookingList';
 import Login from '@/pages/Login';
+import Error500 from '@/components/error/Error500';
 
 const Router = () => {
   return (
@@ -21,8 +22,9 @@ const Router = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/setting/bookinglist" element={<BookingList />} />
         {/* <Route path="/setting/mypage" element={<Test />} /> */}
-        <Route path="/*" element={<NotFound />} />
+        <Route path="/error/500" element={<Error500 />} />
         <Route path="/test" element={<Test />} />
+        <Route path="/*" element={<NotFound />} />
       </Route>
     </Routes>
     // </BrowserRouter>

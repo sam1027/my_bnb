@@ -1,7 +1,7 @@
 export const lightTheme = {
   bgColor: '#f8f9fa',
   colors: {
-    primary: '#429fd3',
+    primary: '#f8f9fa',
     secondary: '#6c757d',
     success: '#429fd3',
     danger: '#ef4444',

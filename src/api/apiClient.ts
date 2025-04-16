@@ -50,12 +50,22 @@ apiClient.interceptors.response.use(
         console.error(err.response?.data.message);
         pushGlobalMessage({
           type: 'error',
-          content: '로그인 세션이 만료되었습니다. 다시 로그인 해주세요.',
+          content: err.response?.data.message,
+          // content: '로그인 세션이 만료되었습니다. 다시 로그인 해주세요.',
         });
-        useAuthStore.getState().logout();
-        window.location.href = loginUrl;
+        // useAuthStore.getState().logout();
+        window.location.href = '/';
       }
     }
+
+    if (status === 500) {
+      pushGlobalMessage({
+        type: 'error',
+        content: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+      });
+      window.location.href = '/my-bnb/error/500';
+    }
+
     return Promise.reject(err);
   }
 );

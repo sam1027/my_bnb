@@ -107,7 +107,7 @@ const BasicLayout = ({ children }: LayoutProps) => {
           {/* 오른쪽 SNS / 로고 등 */}
           <div className="flex gap-3">
             <a
-              href="https://github.com/sam1027"
+              href="https://github.com/sam1027/my_bnb"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-foreground transition-colors"

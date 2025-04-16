@@ -121,7 +121,9 @@ const HomeContainer = () => {
             <span className="text-muted-foreground">Loading more properties...</span>
           </div>
         )}
-        {!hasNextPage && <p className="text-muted-foreground">No more Data to load</p>}
+        {(data?.pages[0].length as number) > 0 && !hasNextPage && (
+          <p className="text-muted-foreground">No more Data to load</p>
+        )}
       </div>
     </div>
   );

@@ -152,6 +152,11 @@ export default function Login() {
     }
   };
 
+  // 준비중..
+  const handlePrepare = () => {
+    alert.info('준비중 입니다.');
+  };
+
   return (
     <div className="max-w-md mx-auto p-6 rounded-2xl border border-gray-200 bg-white">
       {/* 타이틀 */}
@@ -262,6 +267,7 @@ export default function Login() {
         <Button
           variant="outline"
           className="w-full h-14 font-medium text-base flex items-center justify-center gap-3 border-gray-300 rounded-lg mb-3"
+          onClick={handlePrepare}
         >
           <NaverIcon className="h-6 w-6" />
           <span>네이버로 로그인하기</span>
@@ -271,6 +277,7 @@ export default function Login() {
         <Button
           variant="outline"
           className="w-full h-14 font-medium text-base flex items-center justify-center gap-3 border-gray-300 rounded-lg mb-3"
+          onClick={handlePrepare}
         >
           <GoogleIcon className="h-6 w-6" />
           <span>구글로 로그인하기</span>
@@ -280,6 +287,7 @@ export default function Login() {
         <Button
           variant="outline"
           className="w-full h-14 font-medium text-base flex items-center justify-center gap-3 rounded-lg mb-3 bg-[#FEE500] hover:bg-[#FEE500]/80"
+          onClick={handlePrepare}
         >
           <KakaoIcon className="h-6 w-6" />
           <span>카카오로 로그인하기</span>

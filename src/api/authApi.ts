@@ -8,8 +8,8 @@ export const checkEmail = async (email: string) => {
 };
 
 // 회원가입
-export const signup = async (email: string, name: string, password: string) => {
-  const response = await apiClient.post('/auth/signup', { email, name, password });
+export const signup = async (name: string, email: string, password: string) => {
+  const response = await apiClient.post('/auth/signup', { name, email, password });
   return response.data;
 };
 
